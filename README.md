@@ -32,15 +32,15 @@ This script is based on JavaScript and designed to meet a specific output. See b
 **languages:** Controlled vocab. Use one of the following:
 - english
 - french
--spanish
--chinese
--german
-italian
-russian
-ukrainian
-japanese
-no_linguistic_content
-other
+- spanish
+- chinese
+- german
+- italian
+- russian
+- ukrainian
+- japanese
+- no_linguistic_content
+- other
 
 **creators**
 
@@ -66,11 +66,22 @@ other
 
 **related_item**
 
-**license**
+**license:** Controlled vocab. Use one of the following:
+- attribution_noncommercial_4_0_international
+- attribution_4_0_international
+- attribution_noncommercial_noderivatives_4_0_international
+- attribution_noncommercial_sharealike_4_0_international
+- attribution_noderivatives_4_0_international
+- attribution_sharealike_4_0_international
+- cc0_1_0_universal
+- public_domain_mark_1_0
 
 **license_text**
 
-**visibility**
+**visibility:** Controlled vocab. Use one of the following:
+- public
+- authenticated
+- embargo
 
 **embargo_end_date**
 
