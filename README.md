@@ -1,9 +1,9 @@
 # era-batch-script
 Google Apps script used to convert investigation documents to ingest-ready batch spreadsheets
 
-This script is based on JavaScript and designed to meet a specific output. See batch ingest template for example.
+This script is based on JavaScript and designed to meet a specific output. See batch ingest template for example. The headers listed below only include those needed to be passed from the investigation sheet to the manifest for ingest. Many fields exist in the investigation spreadsheet only to aid the investigatory process.
 
-## HEADERS
+## MANIFEST HEADERS
 
 **file_name**: Only contains file name, no path directory.
 
@@ -25,7 +25,9 @@ This script is based on JavaScript and designed to meet a specific output. See b
 - research_material
 - review
 
-**publication_status:** Leave blank unless the item is 'in-press'.
+**publication_status:** Controlled vocab. Use one of the following for articles only:
+- draft
+- published
 
 **owner_id:** Should always be '1'. 
 
@@ -60,11 +62,11 @@ This script is based on JavaScript and designed to meet a specific output. See b
 
 **time_periods:** If associated with a specific period of time.
 
-**citations:**
+**citations:** Full APA citation of item, including DOI.
 
-**source**
+**source:** "The described resource may be derived from the related resource in whole or in part." This likely refers to chapters drawn from a book, etc.
 
-**related_item**
+**related_item:** It is assumed that this includes associated files such as maps, data, or images.
 
 **license:** Controlled vocab. Use one of the following:
 - attribution_noncommercial_4_0_international
@@ -76,13 +78,16 @@ This script is based on JavaScript and designed to meet a specific output. See b
 - cc0_1_0_universal
 - public_domain_mark_1_0
 
-**license_text**
+**license_text:** Used for when users need a customized rights statement other than the CC licenses provided.
 
 **visibility:** Controlled vocab. Use one of the following:
 - public
 - authenticated
 - embargo
 
-**embargo_end_date**
+**embargo_end_date:** Using the latest publication date available, add the embargo period to calculate when the item is set to become available.
 
-**visibility_after_embargo**			
+**visibility_after_embargo:** Controlled vocab. Should be one of the following:
+- public
+- authenticated
+- embargo
