@@ -89,5 +89,4 @@ This script is based on JavaScript and designed to meet a specific output. See b
 
 **visibility_after_embargo:** Controlled vocab. Should be one of the following:
 - public
-- authenticated
-- embargo
+- private
