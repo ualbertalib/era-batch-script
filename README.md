@@ -25,9 +25,9 @@ This script is based on JavaScript and designed to meet a specific output. See b
 - research_material
 - review
 
-**publication_status:** 
+**publication_status:** Leave blank unless the item is 'in-press'.
 
-**owner_id**
+**owner_id:** Should always be '1'. 
 
 **languages:** Controlled vocab. Use one of the following:
 - english
@@ -42,15 +42,15 @@ This script is based on JavaScript and designed to meet a specific output. See b
 - no_linguistic_content
 - other
 
-**creators**
+**creators:** List of authors, last name, comma, first initial, and pipe. (e.g. 'Cockcroft, D.|Grant, K.|Stang, M.')
 
-**subjects**
+**subjects:** List related subject headings or keywords, separated by a pipe "|" character. these are taken from sources in the following order: (1) the article or publisher website (2) web of knowledge or an appropriately reputable subject repository (e.g. Hein) (3) PubMed (4) U of A discovery system (Ebsco discovery).  if you are unable to locate keywords from these sources, you may leave the field blank.
 
-**date_created**
+**date_created:** Year published.
 
-**description**
+**description:** Abstract. If unavailable, use the first paragraph of the material.
 
-**community_id**
+**community_id:** Use corresponding id to name in communityList sheet (https://docs.google.com/spreadsheets/d/1ov7tu_3Lwjbp11x74i429SNtbBZIe4_u8b17E1vkCOQ/edit#gid=0).
 
 **collection_id**
 
