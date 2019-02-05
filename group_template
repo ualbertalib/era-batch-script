@@ -1,0 +1,1155 @@
+/** 
+"Investigation" is a script for controlling the Investigation Spreadsheet. It provides special features unique to investigations, such as sorting by colour or quickly removing formatting for citations
+**/
+
+
+function opens(){ //this is the initilization for the page.
+ 
+  var ui = SpreadsheetApp.getUi(); //creates the custom "special tools for mediated deposit" drop-down menu.
+      ui.createMenu('Special Tools for Mediated Deposit')
+       
+       .addItem('Refresh drop-downs','opens')
+       .addItem('Tutorial mode',"openSide")
+       .addSeparator()
+       .addSubMenu(ui.createMenu('Format')
+       .addItem('Quick-format citations','quickFormat')
+       .addSeparator()
+       .addItem('Wrap Selection (on/off)','wrapSelection')
+       .addItem('Wrap All (on/off)','wrapAll'))
+       .addSubMenu(ui.createMenu('Sort By')
+       .addItem('Clearance','colorSort')
+       .addItem('Journal Title','journalSort')
+       .addItem('Publisher (1st) / Journal Title (2nd)','publisherJournalSort')
+       .addItem('Clearance (1st) / Journal Title (2nd)','colorJournalSort'))
+       .addSeparator()
+       .addSubMenu(ui.createMenu('Admin')
+       .addItem("Create Communications","getComm" )
+       .addItem("Submit for Batch Ingest","getBatch" ))
+       .addToUi();
+       
+  var fileList = [];
+  var thisId = SpreadsheetApp.getActiveSpreadsheet().getId() //retrieves the id for this spreadsheet
+  var parentFolder = DriveApp.getFileById(thisId).getParents() //gets the parentfolder for this spreadsheet
+  var investigationName = '';
+   
+   
+  while (parentFolder.hasNext()) { //iterates over the contents of the parentfolder
+   var childFolders = parentFolder.next().getFolders() //gets the folders out of the parentfolder (i.e. the deposit-file folder)
+   while(childFolders.hasNext()) { //iterates over these folders
+    var depositFolder = childFolders.next(); //retrieves the deposit folder
+    var files = depositFolder.getFiles() //gets the files from the deposit folder and sets them in a files object
+    while (files.hasNext()) { //iterates over the files object
+      var file = files.next() //gets each file
+      fileList.push(file.getName()) //sets the filename to the fileList array 
+    }  
+   }
+  }
+  var parentFolder = DriveApp.getFileById(thisId).getParents()
+  while(parentFolder.hasNext()) {
+   var investigationName = parentFolder.next().getName();
+  }
+  
+  PropertiesService.getScriptProperties().setProperties({'investigationName': investigationName}, false)
+
+  var column = SpreadsheetApp.getActiveSheet().getRange("AF2:AF2999"); // gets the filename range of the spreadsheet
+  var rule = SpreadsheetApp.newDataValidation().requireValueInList(fileList,true); // builds a validation rule which includes drop-down list of the fileList values
+  column.setDataValidation(rule); // sets the rule to the filename range
+
+  // Adds the community and collections names to as data validations
+ 
+  var commSheet = SpreadsheetApp.openById('1ov7tu_3Lwjbp11x74i429SNtbBZIe4_u8b17E1vkCOQ').getActiveSheet(); //gets the communityList file
+  var collSheet = SpreadsheetApp.openById('1ToxcezgwpHgA1jrklJ-mdx8LkOc6F7Mk7zAzvhIn1Ek').getActiveSheet(); //gets the collectionList file
+  var commValues = commSheet.getRange(2, 1, commSheet.getLastRow()-1 ).getValues();
+  var collValues = collSheet.getRange(2, 1, collSheet.getLastRow()-1 ).getValues();  
+  var commRule = SpreadsheetApp.newDataValidation().requireValueInList(commValues); //gets the appropriate range for the data
+  var collRule = SpreadsheetApp.newDataValidation().requireValueInList(collValues);
+  
+  SpreadsheetApp.getActiveSheet().getRange("AI2:AI2999").setDataValidation(commRule); // sets the rule to the community range
+  SpreadsheetApp.getActiveSheet().getRange("AK2:AK2999").setDataValidation(collRule); // sets the rule to the collection range
+
+  // Adds the comm/coll names & noids as key/value pairs in the script property store (these are accessed during batch to provide the correct noid for each name)
+  
+/**  var commValues = commSheet.getRange(2, 1, commSheet.getLastRow()-1, 2 ).getValues(); // gets the two columns (name and noid)
+  var collValues = collSheet.getRange(2, 1, collSheet.getLastRow()-1, 2 ).getValues();   
+
+  for (var i=0; i < commValues.length; i++ ) {
+    var commValue1 = commValues[i][0];
+    var commValue2 = commValues[i][1];
+    newProperties[commValue1] = commValue2; // accesses and assigns the community name and noid list from a sheet in the templates/investigationData folder
+  }
+  
+  for (var i=0; i < collValues.length; i++ ) {
+    var collValue1 = collValues[i][0];
+    var collValue2 = collValues[i][1];
+    newProperties[collValue1] = collValue2; // the same for the collections
+  }
+  
+PropertiesService.getScriptProperties().setProperties(newProperties, true); // sets the new properties and deletes whatever was previously in the property store **/
+
+}
+
+function onEdit(event){ // every time a cell is changed, this function is fired
+  var sh = event.source.getActiveSheet(); // gets the sheet where the event happened
+  var investName = SpreadsheetApp.getActiveSpreadsheet();
+  var c = sh.getActiveCell(); // gets the active cell (an event in one cell)
+  var r = sh.getActiveRange(); // gets the active range (an event in multiple cells, i.e. a copy and paste)
+  var col = c.getColumn(); // gets the column where the single cell event occured
+  var row = c.getRow(); // gets the row where the single cell event occured
+  var numRows = r.getNumRows(); // gets the length of the range in rows
+  
+    if(sh.getName() == "Permissions"){
+    //do nothing, so the script below doesn't mess up the Permissions sheet but will apply to all other sheets.
+    } else {
+  
+  switch (col) { // checks in what column an event occurred (what type of information was entered)  
+    
+    case 1:
+    
+      var currentValues = r.getValues();  // gets values from the active range (an object of values values[row][col]) and sets it to currentValues var 
+      
+      for (var i = 0; i <= numRows; i++) { // iterates over the values object for the new citation
+        var currentRow = r.getRow()+i;
+        
+        if (currentValues[i][0]!="") { //performs a regular expression match of year and moves it to the year column
+          var currentValue = currentValues[i][0].replace(/\"/g,"");
+          var extract = '=if(ISNA(REGEXEXTRACT("' + currentValue + '", "[(|\.|\s]([1|2]{1}[^1-4]{1}[0-9]{2})[)|\.|\s]")),"", REGEXEXTRACT("' + currentValue + '", "[(|\.|\s]([1|2]{1}[^1-4]{1}[0-9]{2})[)|\.|\s]") )'
+          sh.getRange(currentRow,7).setValue(extract)
+        } else {
+          sh.getRange(currentRow,7).setValue("");
+          sh.getRange(currentRow,4).setValue("");
+          sh.getRange(currentRow,23).setValue("");
+          sh.getRange(currentRow,2).setValue("");
+        }
+       
+        if ((currentValues[i][1]==undefined)|(currentValues[i][3]==undefined)|(currentValues[i][21] ==undefined)) { //autocompletes "in press"; "checked OA" columns to "no"; 
+          
+          sh.getRange(currentRow,4).setValue("No");
+          sh.getRange(currentRow,23).setValue("No");
+          sh.getRange(currentRow,2).setValue(PropertiesService.getScriptProperties().getProperty('investigationName'));
+        }
+               
+      }
+ 
+    break;
+     
+    case 3: //itemType
+    
+      var currentValues = r.getValues(); // gets values from the active range (an object of values values[row][col]) and sets it to currentValues var
+      
+      for (var i = 0; i <= numRows; i++) { // iterates over the row
+        var currentRow = r.getRow() + i;   // this is tricky. the values object row begins at 0, but the getRange row begins at 1  (hence the currentRow)
+        var currentValue = currentValues[i][0];  // pulls the current value from whatever row we are currently iterating over; we will also write to this row currentRow) 
+        
+         if (currentValue=="Book Chapter" || currentValue=="Book (whole)") {
+        
+          sh.getRange(currentRow,11).setValue("No"); //Sherpa?
+          sh.getRange(currentRow,12).setBackground("#000000"); //SherpaLink
+          sh.getRange(currentRow,13).setBackground("#000000"); //UpdateDate
+          sh.getRange(currentRow,17).setValue("Yes"); //publisherCheck
+          sh.getRange(currentRow,20).setBackground("#000000"); //volume
+          sh.getRange(currentRow,21).setBackground("#000000"); //issue
+        
+        } else if (currentValue=="") {
+        
+          sh.getRange(currentRow,11).setValue("");
+          sh.getRange(currentRow,12).setBackground("");
+          sh.getRange(currentRow,13).setBackground("");
+          sh.getRange(currentRow,17).setValue("");
+          sh.getRange(currentRow,20).setBackground("");
+          sh.getRange(currentRow,21).setBackground(""); // reset
+       
+       }
+      }
+       
+       break;
+    
+    case 4: //inPress
+      
+      var currentValues = r.getValues();  // gets values from the active range (an object of values values[row][col]) and sets it to currentValues var 
+      
+      for (var i = 0; i <= numRows; i++) { // iterates over the row
+        
+        var currentValue = currentValues[i][0];  // pulls the current value from whatever row we are currently iterating over; we will also write to this row currentRow)         
+        
+        if (currentValue=="Yes") {
+        
+          sh.getRange(r.getRow()+i,16).setValue("In press (orange)");
+          sh.getRange(r.getRow()+i,1).setBackground("#ff9900"); //orange
+          sh.getRange(r.getRow()+i,18).setBackground("#000000"); // get contact info (off)
+          sh.getRange(r.getRow()+i,20,1,5).setBackground("#000000"); //volume - oaResult
+          sh.getRange(r.getRow()+i,27,1,6).setBackground("#000000");
+        
+        } else if (currentValue=="") {
+          
+          sh.getRange(r.getRow()+i,16).setValue("");
+          sh.getRange(r.getRow()+i,1).setBackground("");
+          sh.getRange(r.getRow()+i,18).setBackground("");
+          sh.getRange(r.getRow()+i,20,1,5).setBackground("");
+          sh.getRange(r.getRow()+i,26).setValue("").setBackground("");
+          sh.getRange(r.getRow()+i,27,1,6).setBackground(""); // reset
+        
+        }
+      }  
+    
+    break;
+    
+    case 9: // ISSN
+    
+    var currentValues = r.getValues(); 
+      
+    for (var i = 0; i <= numRows; i++) { // iterates over the row
+        
+     var currentRow = r.getRow() + i;
+     var currentValue = currentValues[i][0];
+     
+     if (currentValues[i][0]!="") {
+       sh.getRange(currentRow,26).setValue('=embargo("' + currentValue + '")');
+       sh.getRange(currentRow,15).setValue('=conditions("' + currentValue + '")');
+       sh.getRange(currentRow,13).setValue('=journalupdate("' + currentValue + '")');
+       sh.getRange(currentRow,10).setValue('=pubupdate("' + currentValue + '")');
+       sh.getRange(currentRow,08).setValue('=journalname("' + currentValue + '")');
+     } else if (currentValues[i][0]=="") {
+         sh.getRange(currentRow,26).setValue("");
+         sh.getRange(currentRow,15).setValue("");
+         sh.getRange(currentRow,13).setValue("");
+         sh.getRange(currentRow,10).setValue("");
+         sh.getRange(currentRow,08).setValue("");
+     }
+    }
+    
+    break;
+
+
+
+    case 11: //Sherpa?
+      
+      var currentValues = r.getValues();  // gets values from the active range (an object of values values[row][col]) and sets it to currentValues var 
+      
+      for (var i = 0; i <= numRows; i++) { // iterates over the row
+        
+        var currentRow = r.getRow() + i;   // this is tricky. the values object row begins at 0, but the getRange row begins at 1  (hence the currentRow)
+        var currentValue = currentValues[i][0];  // pulls the current value from whatever row we are currently iterating over; we will also write to this row currentRow)
+     
+        if (currentValue=="Yes" || currentValue=="") {
+          
+          sh.getRange(currentRow,12).setBackground(""); //SherpaLink
+          sh.getRange(currentRow,13).setBackground(""); //UpdateDate
+          
+        } else if (currentValue=="No") {
+          
+          sh.getRange(currentRow,12).setBackground("#000000");
+          sh.getRange(currentRow,13).setBackground("#000000"); // reset
+        }
+      }
+    
+    break;       
+   
+    case 16: // clearance was changed in col O - the action here is the setting of a value in the AF column to 1:4. These values are later used for sorting by colour.
+      
+      var currentValues = r.getValues();
+      
+      for (var i = 0; i <= numRows; i++) { // iterates over the row
+       
+        var currentRow = r.getRow() + i;    // this is tricky. the values object row begins at 0, but the getRange row begins at 1  (hence the currentRow)
+        
+        switch (currentValues[i][0]) { // gets the value of the cell changed
+        
+          case "Publisher version (green)": //on the basis of the pre-validated values
+            sh.getRange(currentRow,1).setBackground('#3ad73f'); //green
+            sh.getRange(currentRow,18).setBackground("#000000"); // get contact info (off)
+            sh.getRange(currentRow,24).setBackground("#000000");
+            sh.getRange(currentRow,25,1,8).setBackground("");
+            sh.getRange(currentRow,35,1,6).setBackground("");
+            sh.getRange(currentRow,40).setValue('=REGEXREPLACE(REGEXREPLACE(REGEXREPLACE(REGEXREPLACE(REGEXREPLACE(REGEXREPLACE(REGEXREPLACE(REGEXREPLACE(REGEXEXTRACT(E' + currentRow + ',".*"),"\\s","+"),"\\?","%3F"),"\\:","%3A"),"\\,","%2C"),"\\(","%28"),"\\)","%29"),"\\/","%2F"),"^","https://era.library.ualberta.ca/catalog?utf8=✓&q=")');
+            sh.getRange(currentRow,48).setValue("1");
+            break;
+            
+           case "Publisher version (green) require PDF from author": //on the basis of the pre-validated values
+            sh.getRange(currentRow,1).setBackground('#3ad73f'); //green
+            sh.getRange(currentRow,18).setBackground("#000000"); // get contact info (off)
+            sh.getRange(currentRow,24).setBackground("#000000");
+            sh.getRange(currentRow,25,1,8).setBackground("");
+            sh.getRange(currentRow,35,1,6).setBackground("");
+            sh.getRange(currentRow,40).setValue('=REGEXREPLACE(REGEXREPLACE(REGEXREPLACE(REGEXREPLACE(REGEXREPLACE(REGEXREPLACE(REGEXREPLACE(REGEXREPLACE(REGEXEXTRACT(E' + currentRow + ',".*"),"\\s","+"),"\\?","%3F"),"\\:","%3A"),"\\,","%2C"),"\\(","%28"),"\\)","%29"),"\\/","%2F"),"^","https://era.library.ualberta.ca/catalog?utf8=✓&q=")');
+            sh.getRange(currentRow,48).setValue("2");
+            break;
+              
+          case "Post print version (yellow)":
+            sh.getRange(currentRow,1).setBackground("#ffff00"); //yellow
+            sh.getRange(currentRow,18).setBackground("#000000"); // get contact info (off)
+            sh.getRange(currentRow,24).setBackground("#000000");
+            sh.getRange(currentRow,25,1,2).setBackground("");
+            sh.getRange(currentRow,27,1,3).setBackground("#000000");
+            sh.getRange(currentRow,31,1,2).setBackground("#000000");
+            sh.getRange(currentRow,35,1,6).setBackground("#000000");
+            sh.getRange(currentRow,40).setValue("");
+            sh.getRange(currentRow,48).setValue("3");
+          break;
+              
+          case "In press (orange)":
+            sh.getRange(currentRow,1).setBackground("#ff9900"); //orange
+            sh.getRange(currentRow,18).setBackground("#000000"); // get contact info (off)
+            sh.getRange(currentRow,20,1,5).setBackground("#000000"); //volume, issue, pages
+            sh.getRange(currentRow,25,1,2).setBackground("");
+            sh.getRange(currentRow,27,1,6).setBackground("#000000");
+            sh.getRange(currentRow,35,1,6).setBackground("#000000");
+            sh.getRange(currentRow,40).setValue("");
+            sh.getRange(currentRow,48).setValue("4");
+          break;
+              
+          case "Unknown or unclear (grey)": 
+            sh.getRange(currentRow,1).setBackground("#cccccc"); //grey
+            sh.getRange(currentRow,18).setBackground(""); // get contact info
+            sh.getRange(currentRow,24).setBackground("#000000");
+            sh.getRange(currentRow,25,1,2).setBackground("");
+            sh.getRange(currentRow,27,1,6).setBackground("#000000");
+            sh.getRange(currentRow,35,1,6).setBackground("#000000");
+            sh.getRange(currentRow,40).setValue("");
+            sh.getRange(currentRow,48).setValue("5");
+          break;
+          
+          case "Not without publisher or author permission (red)": 
+            sh.getRange(currentRow,1).setBackground("#ff0000"); //red
+            sh.getRange(currentRow,18).setBackground(""); // get contact info
+            sh.getRange(currentRow,24,1,9).setBackground("#000000");
+            sh.getRange(currentRow,35,1,6).setBackground("#000000");
+            sh.getRange(currentRow,40).setValue("");
+            sh.getRange(currentRow,48).setValue("6");
+          break;
+          
+          case "Not permitted (red)":
+            sh.getRange(currentRow,1).setBackground("#ff0000"); //red
+            sh.getRange(currentRow,18).setBackground("#000000"); // get contact info (off)
+            sh.getRange(currentRow,24,1,9).setBackground("#000000");
+            sh.getRange(currentRow,35,1,6).setBackground("#000000");
+            sh.getRange(currentRow,40).setValue("");
+            sh.getRange(currentRow,48).setValue("7");
+          break;
+         
+          case "":
+            sh.getRange(currentRow,1).setBackground('');
+            sh.getRange(currentRow,18).setBackground(""); // get contact info
+            sh.getRange(currentRow,20,1,5).setBackground(""); //volume, issue, pages
+            sh.getRange(currentRow,24,1,9).setBackground("");
+            sh.getRange(currentRow,35,1,6).setBackground("");
+            sh.getRange(currentRow,40).setValue("");
+          break;
+                          
+          default:
+            sh.getRange(currentRow,1).setBackground(''); // defaults to blank
+            sh.getRange(currentRow,18).setBackground(""); // get contact info (off)
+            sh.getRange(currentRow,20,1,5).setBackground(""); //volume, issue, pages
+            sh.getRange(currentRow,24,1,9).setBackground("");
+            sh.getRange(currentRow,35,1,6).setBackground("");
+            sh.getRange(currentRow,40).setValue("");
+          break;
+       } 
+  
+      }
+      
+    break;   
+ 
+    case 23: //OA check
+    
+      var currentValues = r.getValues();  // gets values from the active range (an object of values values[row][col]) and sets it to currentValues var 
+      
+      for (var i = 0; i <= numRows; i++) { // iterates over the row
+        Logger.log(currentValues[i][0])
+        var currentRow = r.getRow() + i;   // this is tricky. the values object row begins at 0, but the getRange row begins at 1  (hence the currentRow)
+        
+        if (currentValues[i][0]=="Yes" || currentValues[i][0]=="") {
+          
+          sh.getRange(currentRow,24).setBackground(""); //OA results
+          
+        } else if (currentValues[i][0]=="No" ) sh.getRange(currentRow,24).setBackground("#000000");
+
+      }    
+    
+    break;
+    
+    case 24: //OA Results
+    
+      var currentValues = r.getValues();  // gets values from the active range (an object of values values[row][col]) and sets it to currentValues var 
+      var ui =  SpreadsheetApp.getUi();
+      for (var i = 0; i <= numRows; i++) { // iterates over the row
+        
+        var currentRow = r.getRow() + i;   // this is tricky. the values object row begins at 0, but the getRange row begins at 1  (hence the currentRow)
+        var currentValue = currentValues[i][0];  // pulls the current value from whatever row we are currently iterating over; we will also write to this row currentRow)
+        var message = 'Selecting yes will set ' + sh.getRange(currentRow,5).getValue() + ' as a green item. Proceed?';
+        if (currentValue=="Yes (accessed and downloaded)") {
+          var response = SpreadsheetApp.getUi().alert(message, ui.ButtonSet.YES_NO);
+          if ( response == ui.Button.YES ) {
+            
+            sh.getRange(currentRow,16).setValue("Publisher version (green)");
+            sh.getRange(currentRow,1).setBackground("#3ad73f");
+            sh.getRange(currentRow,25,1,8).setBackground("");
+ 
+          } else {
+            sh.getRange(currentRow,25,1,8).setBackground("#000000");
+          }
+          
+        } else if (currentValue=="No (requires UAlberta proxy)") sh.getRange(currentRow,25).setBackground("#000000");
+        
+      }    
+    
+    break;
+    
+    case 28:
+    
+      var currentValues = r.getValues();  // gets values from the active range (an object of values values[row][col]) and sets it to currentValues var 
+
+      for (var i = 0; i <= numRows; i++) { // iterates over the row
+
+        var currentRow = r.getRow() +i;
+        var currentValue = currentValues[i][0];  // pulls the current value from whatever row we are currently iterating over; we will also write to this row currentRow) 
+        sh.getRange(currentRow , r.getColumn()).setValue(currentValue.replace(/\s{2,}|[\n]|[\r]/g," "));
+      
+      }
+    
+    break;
+    
+    case 29: //keywords
+    
+    var currentValues = r.getValues();  // gets values from the active range (an object of values values[row][col]) and sets it to currentValues var 
+
+    for (var i = 0; i <= numRows; i++) { // iterates over the row
+
+     var currentRow = r.getRow() +i;
+     var currentValue = currentValues[i][0];
+     
+     if (currentValues[i][0]!="") {
+     sh.getRange(currentRow, 29).setValue('=proper("' + currentValue + '")');
+      }
+     }
+      
+    break;
+    
+    case 35: //communityName
+    
+    var currentValues = r.getValues();  // gets values from the active range (an object of values values[row][col]) and sets it to currentValues var 
+
+    for (var i = 0; i <= numRows; i++) { // iterates over the row
+
+     var currentRow = r.getRow() +i;
+     var currentValue = currentValues[i][0];
+     
+     if (currentValues[i][0]=="") {
+     sh.getRange(currentRow,36).setValue("");
+      } else {
+      } sh.getRange(currentRow,36).setValue('=commNoidSearch("' + currentValue + '")');
+     }
+     break;
+     
+    case 37: //collectionName
+    
+    var currentValues = r.getValues();  // gets values from the active range (an object of values values[row][col]) and sets it to currentValues var 
+
+    for (var i = 0; i <= numRows; i++) { // iterates over the row
+
+     var currentRow = r.getRow() +i;
+     var currentValue = currentValues[i][0];
+     
+     if (currentValues[i][0]=="") {
+     sh.getRange(currentRow,38).setValue("");
+      } else {
+      } sh.getRange(currentRow,38).setValue('=collNoidSearch("' + currentValue + '")');
+     }
+     break;
+
+  }
+}
+}
+
+/****************************************************************************************************************************/
+/**************************************************** NOID SEARCH FUNCTIONS *************************************************/
+
+function commNoidSearch(searchString) {
+  var sh = SpreadsheetApp.openById('1ov7tu_3Lwjbp11x74i429SNtbBZIe4_u8b17E1vkCOQ').getActiveSheet();
+  var values = sh.getDataRange().getValues();
+
+  for(var i=0, iLen=values.length; i<iLen; i++) {
+    if(values[i][0] == searchString) {
+      return values[i][1];
+      Utilities.sleep(500);
+    }
+  }     
+}
+
+
+function collNoidSearch(searchString) {
+  var sh = SpreadsheetApp.openById('1ToxcezgwpHgA1jrklJ-mdx8LkOc6F7Mk7zAzvhIn1Ek').getActiveSheet();
+  var values = sh.getDataRange().getValues();
+
+  for(var i=0, iLen=values.length; i<iLen; i++) {
+    if(values[i][0] == searchString) {
+      return values[i][1];
+      Utilities.sleep(500);
+    }
+  }     
+}
+
+
+/****************************************************************************************************************************/
+/*********************************************** SHERPA/RoMEO API FUNCTIONS *************************************************/
+
+//Function: look for the word "Embargo" in the journal's copyright record
+function embargo(issn) {
+  var text = getXML(issn);
+  var embargoPDF=text.search("embargo");
+  var restricted=text.search("restricted");
+  if ((embargoPDF == "-1") && (restricted == "-1")) {
+    return ("No embargo found");
+  } else if ((embargoPDF > -1) || (restricted > -1)) {
+    return embargoCheck(text);
+  }
+}
+
+    //Function: works with conditionscheck below to insert SR conditions into spreadsheet
+function conditions(issn) {
+  var text = getXML(issn);
+  var conditionslist=text.search("<condition>");
+  if (conditionslist == "-1") {
+    return ("No conditions found");
+  } else if (conditionslist > -1) {
+    return conditionscheck(text);
+  }
+}
+
+//Function: works with updatecheck below to insert SR entry update date into spreadsheet
+function journalupdate(issn) {
+  var text = getXML(issn);
+  var updatelist=text.search("<dateupdated>");
+  if (updatelist == "-1") {
+    return ("No update date found");
+  } else if (updatelist > -1) {
+    return updatecheck(text);
+  }
+}
+
+//Function: works with findpublisher below to insert SR entry update date into spreadsheet
+function pubupdate(issn) {
+  var text = getXML(issn);
+  var publist=text.search("<name>");
+  if (publist == "-1") {
+    return ("Cannot find publisher");
+  } else if (publist > -1) {
+    return findpublisher(text);
+  }
+}
+
+//Function: works with findjournal below to insert SR entry update date into spreadsheet
+function journalname(issn) {
+  var text = getXML(issn);
+  var journallist=text.search("<jtitle>");
+  if (journallist == "-1") {
+    return ("Cannot find Journal");
+  } else if (journallist > -1) {
+    return findjournal(text);
+  }
+}
+
+//Function: use this function if your system deleted the starting zeros of your ISSN numbers. DSpace 1.6 does this on //a metadata export.
+function fixISSNdoc(issn) {
+  issn = fixissn(issn);
+  if (issn == 00000000 || issn == 0000-0000 || issn == "") 
+  { return ("blank ISSN") 
+  } else if (issn.length > 9) {
+    return ("invalid issn") } else 
+      return issn;
+}
+
+//test function for logging purposes
+function testSherp() {
+   var result = pubpdf("2041-8205");
+   Logger.log("test result is '" + result + "'");
+}
+
+//These are all the "Helper" functions used in the main functions
+function fixissn(issn){
+  Logger.log("Old issn " + issn);
+  //if there's a dash in the ISSN, it need 9 characters instead of 8
+  if (issn.search("-") > -1) {
+   var mis = 9; 
+  } else if (issn.search("-") == -1) {
+  var mis = 8; 
+  }
+  
+  //if the ISSN is less than 9 or 8 (mis), add zeros to the beginning
+  while (issn.length < mis && issn.length > 0) {
+    //zero added to beginning of ISSN
+    issn = 0 + issn
+    }
+  Logger.log("fixed to new issn " + issn);
+  return issn;
+}
+
+function getXML(issn){
+    // retrieves XML output from Sherpa API using issn input
+  issn = fixissn(issn);
+  
+//Google scripts will timeout if you run the script too often. These sleep actions are designed to space out your commands. Comment out the next 6 lines if you're testing and only running small batches (less than 10 at a time).
+  var randnumber = Math.random()*5000;
+  Utilities.sleep(randnumber); 
+  Utilities.sleep(randnumber); 
+  Utilities.sleep(randnumber); 
+  Utilities.sleep(randnumber); 
+  Utilities.sleep(randnumber); 
+  
+  //Sherpa API key
+  //register for a key at http://www.sherpa.ac.uk/romeo/apiregistry.php
+    var sherpaAPIkey = "mHyLBEovCTQ";
+  //insert your API key inside the quotes
+  
+   var parameters = {method : "get"};
+   var xmlText = UrlFetchApp.fetch("http://www.sherpa.ac.uk/romeo/api29.php?issn=" + issn + "&versions=all" + "&ak=" + sherpaAPIkey,parameters).getContentText();
+  return xmlText;
+}
+  
+function embargoCheck(txt) {
+  var sixMonth=txt.search(/<num>6|6\smonth/);
+  var nineMonth=txt.search(/<num>9|9\smonth/);
+  var twelveMonth=txt.search(/<num>12|12\smonth/);
+  var eighteenMonth=txt.search(/<num>18|18\smonth/);
+  var twentyfourMonth=txt.search(/<num>24|24\smonth/);
+  var thirtysixMonth=txt.search(/<num>36|36\smonth/);
+  var fortyeightMonth=txt.search(/<num>48|48\smonth/);
+    
+  if (sixMonth > -1) {
+    var embargoMonth = "6 month"
+  } else if (nineMonth > -1) {
+      embargoMonth = "9 month"
+  } else if (twelveMonth > -1) {
+      embargoMonth = "12 month"
+  } else if (eighteenMonth > -1) {
+      embargoMonth = "18 month"
+  } else if (twentyfourMonth > -1) {
+      embargoMonth = "24 month"
+  } else if (thirtysixMonth > -1) {
+      embargoMonth = "36 month"
+  } else if (fortyeightMonth > -1) {
+      embargoMonth = "48 month"
+  } else {
+      embargoMonth = "Check embargo"
+  }
+    return embargoMonth;
+}
+
+function updatecheck(txt) {
+var startupdate = txt.indexOf('<dateupdated>') + 13;
+var endupdate = txt.indexOf('</dateupdated>',startupdate) - 9;
+var finalupdate = txt.substring(startupdate,endupdate);
+return finalupdate;
+}
+
+
+function conditionscheck(txt) {
+var startconditions = txt.indexOf('<conditions>') + 12;
+var endconditions = txt.indexOf('</conditions>',startconditions);
+var conditions = txt.substring(startconditions,endconditions);
+  var finalconditions = conditions.replace(/<condition>|<\/condition>|(Publisher last).*?<\/condition>|^\s|\s+$|[ ]{2}|&lt;num&gt;|&lt;\/num&gt;|&lt;\/period&gt;/g, "").replace(/(&quot\;)/g, "'").replace(/(&lt;period units='month'&gt;months)/g, "months");
+return finalconditions;
+}
+
+function findpublisher(txt) {
+var startpub = txt.indexOf('<name>') + 6;
+var endpub = txt.indexOf('</name>',startpub);
+var finalpub = txt.substring(startpub,endpub);
+var finalpub = finalpub.replace("&amp;", "&");
+return finalpub;
+}
+
+function findjournal(txt) {
+var startjournal = txt.indexOf('<jtitle>') + 8;
+var endjournal = txt.indexOf('</jtitle>',startjournal);
+var finaljournal = txt.substring(startjournal,endjournal);
+//var finaljournal = finaljournal.replace("&amp;", "&");
+return finaljournal;
+}
+
+/****************************************************************************************************************************/
+/***************************************************** FORMATTING FUNCTIONS *************************************************/
+
+function journalSort() {
+  SpreadsheetApp.getActiveSheet().sort(8); 
+}
+
+function publisherJournalSort() {
+
+  var pubsort = SpreadsheetApp.getActiveSheet().sort(8);
+  pubsort.sort(10)
+  
+}
+
+function colorSort() {
+
+  var sheet = SpreadsheetApp.getActiveSheet();  
+  sheet.sort(48);
+}
+
+
+
+
+function colorJournalSort() {
+  var sheet = SpreadsheetApp.getActiveSheet();
+  var range = sheet.getRange(2, 1, sheet.getLastRow() - 1, sheet.getLastColumn());   
+  range.sort([48, 8]);
+    }
+
+
+function quickFormat() {
+  var sheet = SpreadsheetApp.getActiveSheet();
+  sheet.getRange(2, 1, sheet.getLastRow() - 1).setFontStyle('normal').setFontWeight('normal').setWrap(true);
+}
+
+function wrapSelection() {
+  if (SpreadsheetApp.getActiveSheet().getActiveRange().getWrap()) {
+   SpreadsheetApp.getActiveSheet().getActiveRange().setWrap(false)
+  } else if (!(SpreadsheetApp.getActiveSheet().getActiveRange().getWrap())) SpreadsheetApp.getActiveSheet().getActiveRange().setWrap(true);
+}
+
+function wrapAll() {
+  if (SpreadsheetApp.getActiveSheet().getDataRange().getWrap()) {
+   SpreadsheetApp.getActiveSheet().getDataRange().setWrap(false)
+  } else if (!(SpreadsheetApp.getActiveSheet().getDataRange().getWrap())) SpreadsheetApp.getActiveSheet().getDataRange().setWrap(true);
+}
+
+
+
+/****************************************************************************************************************************/
+/***************************************************** TUTORIAL INDEX *******************************************************/
+
+
+function openSide() { // opens the sidebar dialog
+ 
+  var html = HtmlService.createTemplateFromFile('index')
+          .evaluate()
+          .setSandboxMode(HtmlService.SandboxMode.IFRAME)
+          .setTitle('Tutorials')
+     
+  SpreadsheetApp.getUi() // Or DocumentApp or FormApp.
+      .showSidebar(html);
+}
+
+/******************************************************************************************************************************/
+/******************************************** BATCH, COMMUNICATIONS, & Permissions ********************************************/
+
+function getBatch() {initializedataTransportObject('batch')};
+function getComm() {initializedataTransportObject('communication')};
+
+function initializedataTransportObject(type) { // forks the direction of ingest, either new or existing, and passes the data to the sheet factory
+  
+  var ui = SpreadsheetApp.getUi();
+  var dataTransportObject = {};
+  
+  if (type=='batch') {
+    
+    if (ui.alert('New Ingest?', "Click 'Yes' if this is a NEW ingest. Click 'No' if this is an ongoing (existing) ingest.", ui.ButtonSet.YES_NO) == ui.Button.YES) { //indicates a new batch should be created, we will perform this.
+      
+      dataTransportObject.existing = false;  
+    
+    } else dataTransportObject.existing = true; //indicates a batch already exists, so we will locate the most recently updated file in the batch folder
+ 
+  } else if (type == 'communication') {
+    
+    dataTransportObject.existing = false;
+    
+  } 
+
+  sheetFactory(dataTransportObject, type);
+
+}
+
+
+
+function sheetFactory(dataTransportObject, type) { // if an existing sheet is used, the name is requested and the sheet id is passed to the parseData function. A newly created sheet must first be named, then moved from the root to the batch folder, then removed from the root (essentially a file move). In both cases, the sheet id is passed to dataParser along with admin data
+  
+  var rootFolder = DriveApp.getRootFolder(); // get the drive's root folder (iterator type)
+  var ui = SpreadsheetApp.getUi();
+  
+  if (dataTransportObject.existing == true) { 
+    
+    var name = ui.prompt('What is the name of the existing file?').getResponseText();
+    var files = DriveApp.getFilesByName( name ); // gets existing spreadsheet id
+    while (files.hasNext()) var sheetId = files.next().getId();   
+  
+  } else if (dataTransportObject.existing == false) {   
+    
+    if (type=='batch') {   
+      
+      var sheetId = SpreadsheetApp.create( ui.prompt('Name your new batch ingest file:').getResponseText() , 1, 29 ).getId(); // create a new blank spreadsheet with 1 row and 28 columns
+      var destinationFolder = DriveApp.getFolderById('0B8kEt6qEUaR-QWlPa3JObGkySGM'); // batch ingest folder (iterator type)   
+      Utilities.sleep(500);
+    
+    } else if (type=='communication') {
+      
+      var sheetId = SpreadsheetApp.create( PropertiesService.getScriptProperties().getProperty('investigationName') + 'Communication' , 1, 3 ).getId();
+      var parentFolder = DriveApp.getFileById(SpreadsheetApp.getActiveSpreadsheet().getId()).getParents();
+      while(parentFolder.hasNext()) var destinationFolder = DriveApp.getFolderById(parentFolder.next().getId());
+      Utilities.sleep(500);
+    
+    } 
+    
+    var rootFiles = rootFolder.getFiles(); // get the root folder's files, which contains the newly created blank spreadsheet
+    
+    while (rootFiles.hasNext()) {
+      
+      Utilities.sleep(500);
+      var file = rootFiles.next(); //get the newly created spreadsheet from the drive root
+      
+      if (file.getId() == sheetId) {  //copies the spreadsheet to the active batch folder
+        
+        sheetId = file.getId(); // to edit the new sheet later
+        destinationFolder.addFile(file); // add the new spreadsheet to the active batch folder
+        var fileId = file.getId(); // gets the id for the root version of the new spreadsheet 
+      
+      }
+    
+    }
+     
+    rootFolder.removeFile(DriveApp.getFileById(fileId)); // delete the previous copy of the file from the root
+  }
+  
+  
+  dataTransportObject.sheetId = sheetId; 
+  rowIterator(dataTransportObject, type);
+
+
+if (type=='batch') {
+    
+    if (ui.alert('Copy Files?', "Copy files from investigation to the batch folder?", ui.ButtonSet.YES_NO) == ui.Button.YES) moveBatchFiles();
+  
+  }
+
+}
+
+
+function rowIterator(dataTransportObject, type) { // checks if row contains "green" citation and, if so, calls "parseRow" to get the data from the sheet
+  
+  var ui = SpreadsheetApp.getUi();
+  var activeSheet = SpreadsheetApp.getActiveSheet();
+  var rowLen = activeSheet.getDataRange().getLastRow();
+
+  for ( var currentRow = 2; currentRow <= rowLen; currentRow++) rowParser(dataTransportObject, currentRow, type); // tests and parses a row
+  
+  if (dataTransportObject.existing==false) initNewSheet(SpreadsheetApp.openById(dataTransportObject['sheetId']).getActiveSheet(), type) // adds header to a new sheet
+   
+
+}     
+
+
+
+function rowParser(dataTransportObject, currentRow, type) { // gets data from the active sheet using Google App functions, stores it in the "data" array, and passes the data array along with the "dataTransportObject" to dataTransfer function iteratively, row by row.
+  
+  
+  var activeSheet = SpreadsheetApp.getActiveSheet();
+  var values = activeSheet.getRange(currentRow, 1, 1, 38).getValues();
+  var fileName = values[0][31];
+  var journal = values[0][7];
+  var publisher = values[0][9];
+  var contact = values[0][17];
+  var notes = values[0][18];
+  var volume = values[0][19];
+  var issue = values[0][20];
+  var pages = values[0][21];
+  var authorData = parseAuthorData(values);
+  var commNoid = values [0][35];
+  var collNoid = values [0][37];
+  var inERA = values[0][38];
+  
+  dataTransportObject.originalCitation = values[0][0];
+  dataTransportObject.fileName = values[0][31];
+  dataTransportObject.itemType = values[0][2];
+  dataTransportObject.itemTitle = values[0][4];
+  dataTransportObject.authorsBatch = values[0][5];
+  dataTransportObject.year = values[0][6];
+  dataTransportObject.journal = values[0][7];
+  dataTransportObject.publisher = values[0][9];
+  dataTransportObject.contact = values[0][17];
+  dataTransportObject.notes = values[0][18];
+  dataTransportObject.relatedURL = values[0][24];
+  dataTransportObject.description = values[0][27];
+  dataTransportObject.keywords = values[0][28];
+  dataTransportObject.license = values[0][30].replace('[date]', values[0][6] ).replace( '[author(s) or publisher]' , authorData['authorsFirstNameFirst'] );
+  dataTransportObject.isVersionOf = values[0][0];
+  dataTransportObject.contributor = values[0][26];
+  dataTransportObject.embargo = parseEmbargoData(values);
+  dataTransportObject.date = values[0][29];
+  dataTransportObject.inPress = values[0][3];
+  dataTransportObject.clearance = values[0][15];
+  dataTransportObject.commName = values[0][34];
+  dataTransportObject.commNoid = values[0][35];
+  dataTransportObject.collName = values[0][36];
+  dataTransportObject.collNoid = values[0][37];
+  dataTransportObject.inERA = values[0][38];
+  
+  dataTransfer(dataTransportObject, type);
+        
+}
+
+function parseAuthorData(values) { //parses author field data and collates into two formats: 1) first name last name 2) last name, abbreviated first name. Returns to the dataParser function.
+  
+ 
+  var authorsFirstNameFirst = "";
+  var citAuthors = '';
+
+   
+  if (values[0][5].indexOf('|')) { 
+        
+    var temp = values[0][5].split('|');
+      
+    authorsFirstNameFirst = temp[0].split(",").reverse().toString().replace(" ","").replace(","," ") + ' et al.';
+          
+    for (var i = 0; i < temp.length; i++) {
+        
+      var firstInit = temp[i].split(",").reverse().toString().replace(" ","").slice(0,1); 
+      var lastName = temp[i].split(",").shift().toString();
+        
+      if ((i == temp.length-1)&&(i>0)) { 
+        
+        citAuthors += 'and ' + lastName + ', ' +  firstInit + '. ';
+      
+      } else {
+        
+        citAuthors += lastName + ', ' +  firstInit + '., ';
+      
+      }  
+    
+    }
+  
+  } else {
+    authorsFirstNameFirst += activeSheet.getRange(currentRow, 6).getValue().split(",").reverse().toString().replace(" ","").replace(","," ");
+    var firstInit = activeSheet.getRange(currentRow, 6).getValue().split(",").reverse().toString().replace(" ","").slice(0,1);
+    var lastName = activeSheet.getRange(currentRow, 6).getValue().split(",").shift().toString();
+    var citAuthors = lastName + ', ' +  firstInit + '. ';
+  }
+ 
+  var authorData = {
+                       'authorsFirstNameFirst': authorsFirstNameFirst,
+                       'citAuthors': citAuthors
+                   };
+            
+  return authorData;
+  
+}
+
+
+function parseEmbargoData(values) { //parses embargo field data and returns notes for communication spreadsheet
+
+var embargoPeriod = "";
+
+if (values[0][25] != ("") || ("No embargo found") || ("Check embargo")) {
+  var month = values[0][25];
+  
+  for (var i = 0; i <month.length; i++) {
+
+      if (month == ("18 month") || ("24 month") || ("36 month") || ("48 month")) {
+    
+      var embargoPeriod = "For future reference: This journal's publisher has set an embargo period of >12 months. The Tri-Agency Open Access Policy on Publications requires access within 12 months of original publication. The embargo period for this journal is " + month + "s.";
+      
+      } else if (month == ("6 month") || ("9 month") || ("12 month")) {
+    
+      var embargoPeriod = "";
+    }
+    
+    break;
+  }
+}
+
+return embargoPeriod;
+
+}
+
+
+function dataTransfer(dataTransportObject, type) { //transfers data to the edited sheet one row at a time (this function is called iteratively)
+
+  var sheet = SpreadsheetApp.openById(dataTransportObject['sheetId']).getActiveSheet();
+  var lastRow = sheet.getDataRange().getLastRow();
+  
+  
+  lastRow++;
+
+    if ((type=='batch') && (dataTransportObject['clearance'] == 'Publisher version (green)' || 'Post print version (yellow)') && (dataTransportObject['fileName'] != '') && (dataTransportObject['inERA'] != 'Yes')  ) { 
+    sheet.getRange(lastRow,1).setValue('batchFiles/' + dataTransportObject['fileName']);
+    sheet.getRange(lastRow,2).setValue(dataTransportObject['itemType']);
+    sheet.getRange(lastRow,4).setValue(dataTransportObject['isVersionOf']);
+    sheet.getRange(lastRow,5).setValue(dataTransportObject['itemTitle']);
+    sheet.getRange(lastRow,6).setValue(dataTransportObject['authorsBatch']);
+    sheet.getRange(lastRow,7).setValue(dataTransportObject['contributor']);
+    sheet.getRange(lastRow,8).setValue(dataTransportObject['description']);
+    sheet.getRange(lastRow,9).setValue(dataTransportObject['keywords']);
+    sheet.getRange(lastRow,12).setValue(dataTransportObject['year']);
+    sheet.getRange(lastRow,13).setValue('english');
+    sheet.getRange(lastRow,14).setValue(dataTransportObject['relatedURL']); //used
+    sheet.getRange(lastRow,19).setValue('open access');     
+    sheet.getRange(lastRow,21).setValue(dataTransportObject['commName']);
+    sheet.getRange(lastRow,22).setValue(dataTransportObject['commNoid']);
+    sheet.getRange(lastRow,23).setValue(dataTransportObject['collName']);
+    sheet.getRange(lastRow,24).setValue(dataTransportObject['collNoid']);
+      
+    if (dataTransportObject['date']) { // if an embargo is set, these attributes are applies
+      
+      sheet.getRange(lastRow,18).setValue(dataTransportObject['date']);
+      sheet.getRange(lastRow,19).setValue('private');
+      sheet.getRange(lastRow,20).setValue('open access');
+    
+    }              
+          
+    if ((dataTransportObject['license'].indexOf("Attribution"))>-1) { // determines if this statement belongs to 'license' column or 'rights' column
+      
+      sheet.getRange(lastRow,11).setValue(dataTransportObject['license']); //rights
+    
+    } else {
+      
+      sheet.getRange(lastRow,10).setValue(dataTransportObject['license']); //license
+    
+    } 
+    
+  } else if (type=='communication' && dataTransportObject['originalCitation']!='') {
+    
+
+    
+    switch (dataTransportObject['clearance']) {
+    
+          case "clearance":
+
+          break; 
+
+          case "Publisher version (green)":
+            sheet.getRange(lastRow,3).setValue('This item will be deposited into ERA.').setWrap(true);
+            sheet.getRange(lastRow,1).setValue(dataTransportObject.originalCitation).setBackground('#3ad73f').setWrap(true);
+            sheet.getRange(lastRow,5).setValue(1).setWrap(true);
+            sheet.getRange(lastRow,2).setValue("Publisher version").setWrap(true);
+          break;
+        
+           case "Publisher version (green) require PDF from author":
+            sheet.getRange(lastRow,3).setValue('Please send us your final PDF.').setWrap(true);
+            sheet.getRange(lastRow,1).setValue(dataTransportObject.originalCitation).setBackground('#3ad73f').setWrap(true);
+            sheet.getRange(lastRow,5).setValue(1).setWrap(true);
+            sheet.getRange(lastRow,2).setValue("Publisher version").setWrap(true);
+          break;
+            
+          case "Post print version (yellow)":
+           sheet.getRange(lastRow,3).setValue('Please send us your author post-print.').setWrap(true);
+           sheet.getRange(lastRow,1).setValue(dataTransportObject.originalCitation).setBackground('#ffff00').setWrap(true);
+           sheet.getRange(lastRow,5).setValue(2).setWrap(true);
+           sheet.getRange(lastRow,2).setValue("Post print version").setWrap(true);
+           sheet.getRange(lastRow,4).setValue(dataTransportObject.embargo).setWrap(true);
+          break;
+          
+          case "In press (orange)":
+            sheet.getRange(lastRow,3).setValue('Unable to deposit item due to its unpublished status.').setWrap(true);
+            sheet.getRange(lastRow,1).setValue(dataTransportObject.originalCitation).setBackground('#ff9900').setWrap(true);
+            sheet.getRange(lastRow,5).setValue(3).setWrap(true);
+            sheet.getRange(lastRow,2).setValue("In Press").setWrap(true);
+          break;
+            
+          case "Unknown or unclear (grey)": 
+            sheet.getRange(lastRow,3).setValue('The publisher policies for archiving are unclear. We are sending a permission request to the publisher.').setWrap(true);
+            sheet.getRange(lastRow,1).setValue(dataTransportObject.originalCitation).setBackground('#cccccc').setWrap(true);
+            sheet.getRange(lastRow,5).setValue(4).setWrap(true);
+            sheet.getRange(lastRow,2).setValue("Unknown or unclear").setWrap(true);
+          break;
+          
+          case "Not without publisher or author permission (red)":
+            sheet.getRange(lastRow,3).setValue('We are unable to deposit this item unless permission is sought from the publisher. We are sending a permission request to the publisher.').setWrap(true);
+            sheet.getRange(lastRow,1).setValue(dataTransportObject.originalCitation).setBackground('#ff0000').setWrap(true);
+            sheet.getRange(lastRow,5).setValue(5).setWrap(true);
+            sheet.getRange(lastRow,2).setValue("Not without publisher permission").setWrap(true);
+          break;
+          
+          case "Not permitted (red)":
+            sheet.getRange(lastRow,3).setValue('We are unable to deposit this item due to publisher restrictions.').setWrap(true);
+            sheet.getRange(lastRow,2).setValue("Not permitted").setWrap(true);
+            sheet.getRange(lastRow,1).setValue(dataTransportObject.originalCitation).setBackground('#ff0000').setWrap(true);
+            sheet.getRange(lastRow,5).setValue(6).setWrap(true);
+            sheet.getRange(lastRow,2).setValue("Not permitted").setWrap(true);
+          break;
+
+    }
+    
+  }
+  
+}
+ 
+function initNewSheet(newSheet, type) { // writes the first (header) row to the newly created sheet
+  
+  if (type == 'batch' ) { // sets the batch headers
+    newSheet.getRange(1,1).setValue('fileName');
+    newSheet.getRange(1,2).setValue('itemType');
+    newSheet.getRange(1,3).setValue('ownerId');
+    newSheet.getRange(1,4).setValue('isVersionOf');
+    newSheet.getRange(1,5).setValue('title');
+    newSheet.getRange(1,6).setValue('creator');
+    newSheet.getRange(1,7).setValue('contributor'); 
+    newSheet.getRange(1,8).setValue('description');
+    newSheet.getRange(1,9).setValue('subject');
+    newSheet.getRange(1,10).setValue('license');
+    newSheet.getRange(1,11).setValue('rights');
+    newSheet.getRange(1,12).setValue('dateCreated');
+    newSheet.getRange(1,13).setValue('language');
+    newSheet.getRange(1,14).setValue('relatedURL'); 
+    newSheet.getRange(1,15).setValue('source');
+    newSheet.getRange(1,16).setValue('temporal');
+    newSheet.getRange(1,17).setValue('spatial');
+    newSheet.getRange(1,18).setValue('embargoDate');
+    newSheet.getRange(1,19).setValue('visOnIngest');
+    newSheet.getRange(1,20).setValue('visAfterEmbargo');
+    newSheet.getRange(1,21).setValue('communityName');
+    newSheet.getRange(1,22).setValue('communityNoid');
+    newSheet.getRange(1,23).setValue('collectionName');
+    newSheet.getRange(1,24).setValue('collectionNoid');
+    newSheet.getRange(1,25).setValue('communityName2');
+    newSheet.getRange(1,26).setValue('communityNoid2');
+    newSheet.getRange(1,27).setValue('collectionName2');
+    newSheet.getRange(1,28).setValue('collectionNoid2');
+  }
+  
+  if (type == 'communication') { //sets the communication sheet headers and sorts by clearance
+
+    newSheet.sort(5);
+    newSheet.getRange( 1, 5, newSheet.getLastRow() ).clearContent();
+    newSheet.hideColumns(5);
+    newSheet.insertRowBefore(1);
+    
+    newSheet.getRange(1,1).setValue('Item').setBackground('#ffffff').setFontWeight('bold').setHorizontalAlignment('center');
+    newSheet.getRange(1,2).setValue('Clearance').setFontWeight('bold').setHorizontalAlignment('center');
+    newSheet.getRange(1,3).setValue('Actions').setFontWeight('bold').setHorizontalAlignment('center');
+    newSheet.getRange(1,4).setValue('Note').setFontWeight('bold').setHorizontalAlignment('center');
+    newSheet.setColumnWidth(1,400).setColumnWidth(2,180).setColumnWidth(3,300).setColumnWidth(4,400);
+    newSheet.getRange(1, 1, newSheet.getLastRow(), newSheet.getLastColumn()).setBorder(true, true, true, true, true, true).setWrap(true);
+    
+  }
+  
+  return true;
+}
+
+
+function moveBatchFiles() {
+
+  var investigationFolderIterator = DriveApp.getFoldersByName(SpreadsheetApp.getUi().prompt('Provide the name of the folder where your INVESTIGATION files are stored:').getResponseText());
+  var batchFolderIterator = DriveApp.getFoldersByName(SpreadsheetApp.getUi().prompt('Provide the name of the folder where your BATCH files are stored:').getResponseText());
+  var fileList = SpreadsheetApp.getActiveSheet().getRange(2, 32, SpreadsheetApp.getActiveSheet().getLastRow() -1 ).getValues();
+  
+  while (batchFolderIterator.hasNext()) {
+    var batchIngestFilesFolder = DriveApp.getFolderById(batchFolderIterator.next().getId())
+  }
+  
+  while (investigationFolderIterator.hasNext()) {  
+    var investigationFiles = DriveApp.getFolderById(investigationFolderIterator.next().getId()).getFiles(); //gets folders (there is only one) in the current investigation folder
+  }
+
+  while ( investigationFiles.hasNext() ) {
+    
+    var file = investigationFiles.next();
+  
+    for (var i = 0; i<=fileList.length; i++) {
+      
+      if ( fileList[i] == file.getName() ) { // verify the file is in our file name list
+        batchIngestFilesFolder.addFile(file); // add each investigation file to the batch ingest file folder
+      
+      }
+    
+    }
+  }
+
+}
