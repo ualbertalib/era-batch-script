@@ -3,7 +3,7 @@ Google Apps script used to convert investigation documents to ingest-ready batch
 
 This script is based on JavaScript and designed to meet a specific output. See batch ingest template for example.
 
-HEADERS
+## HEADERS
 
 **file_name**: Only contains file name, no path directory.
 
@@ -12,23 +12,35 @@ HEADERS
 **alternate_title**: Assumption here is that this is used when early versions of an article use a slightly different name than the final published version.
 
 **type**: Controlled vocabulary. Investigation validation requires one of the following:
--book
--chapter
--conference_poster
--conference_paper
--dataset
--image
--article
--learning_object
--report
--research_material
--review
 
-**publication_status**
+- book
+- chapter
+- conference_poster
+- conference_paper
+- dataset
+- image
+- article
+- learning_object
+- report
+- research_material
+- review
+
+**publication_status:** 
 
 **owner_id**
 
-**languages**
+**languages:** Controlled vocab. Use one of the following:
+- english
+- french
+-spanish
+-chinese
+-german
+italian
+russian
+ukrainian
+japanese
+no_linguistic_content
+other
 
 **creators**
 
