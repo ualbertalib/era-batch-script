@@ -90,3 +90,17 @@ This script is based on JavaScript and designed to meet a specific output. See b
 **visibility_after_embargo:** Controlled vocab. Should be one of the following:
 - public
 - private
+
+## LINKS
+
+Edit with caution. Access master script by clicking Tools>Script Editor.
+
+individualInvestigationTemplate: https://docs.google.com/spreadsheets/d/14csVDxJj_Vx3VxVxtihEwnNE45zlZIh9lRn_oTi7DCI/edit#gid=0
+
+groupInvestigationTemplate: https://docs.google.com/spreadsheets/d/1Un4hGETy6WxVOpsMtr30tPDG2usAXFVXloIaFLoHO2E/edit#gid=0
+
+postprintDepositTemplate: https://docs.google.com/spreadsheets/d/1N-rSnQgCpWYYqAjvRZVFRmcSwY4vtGYhXAHqzUCmB0Y/edit#gid=0
+
+collectionList: https://docs.google.com/spreadsheets/d/1ToxcezgwpHgA1jrklJ-mdx8LkOc6F7Mk7zAzvhIn1Ek/edit#gid=0
+
+communityList: https://docs.google.com/spreadsheets/d/1ov7tu_3Lwjbp11x74i429SNtbBZIe4_u8b17E1vkCOQ/edit#gid=0
