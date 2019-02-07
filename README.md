@@ -66,7 +66,7 @@ This script is based on JavaScript and designed to meet a specific output. See b
 
 **source:** "The described resource may be derived from the related resource in whole or in part." This likely refers to chapters drawn from a book, etc.
 
-**related_item:** It is assumed that this includes associated files such as maps, data, or images.
+**related_item:** This field should contain the DOI for the original publication. 
 
 **license:** Controlled vocab. Use one of the following:
 - attribution_noncommercial_4_0_international
