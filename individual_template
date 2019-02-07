@@ -983,7 +983,7 @@ function rowParser(dataTransportObject, currentRow, type) { // gets data from th
   dataTransportObject.publisher = values[0][9];
   dataTransportObject.contact = values[0][17];
   dataTransportObject.notes = values[0][18];
-  dataTransportObject.relatedURL = values[0][24];
+  dataTransportObject.related_item = values[0][24];
   dataTransportObject.description = values[0][27];
   dataTransportObject.subjects = values[0][28];
   dataTransportObject.license = values[0][30].replace('[date]', values[0][6] ).replace( '[author(s) or publisher]' , authorData['authorsFirstNameFirst'] );
@@ -1102,6 +1102,7 @@ function dataTransfer(dataTransportObject, type) { //transfers data to the edite
     sheet.getRange(lastRow,13).setValue(dataTransportObject['collection_id']); 
 	sheet.getRange(lastRow,14).setValue(dataTransportObject['contributors']);
 	sheet.getRange(lastRow,17).setValue(dataTransportObject['citations']);
+    sheet.getRange(lastRow,19).setValue(dataTransportObject['related_item']);
     sheet.getRange(lastRow,20).setValue(dataTransportObject['license']);
     sheet.getRange(lastRow,21).setValue(dataTransportObject['license_text']);
 	sheet.getRange(lastRow,23).setValue(dataTransportObject['embargo_end_date']);
