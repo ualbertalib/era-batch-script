@@ -998,7 +998,7 @@ function rowParser(dataTransportObject, currentRow, type) { // gets data from th
   dataTransportObject.inERA = values[0][39];
   dataTransportObject.license_text = values[0][31];
   dataTransportObject.embargo_end_date = values[0][29];
-  dataTransportObject.languages = ["English","French","etc"];
+  dataTransportObject.languages = ["english"];
   dataTransportObject.owner_id = '1';
   
   dataTransfer(dataTransportObject, type);
