@@ -986,7 +986,7 @@ function rowParser(dataTransportObject, currentRow, type) { // gets data from th
   dataTransportObject.related_item = values[0][24];
   dataTransportObject.description = values[0][27];
   dataTransportObject.subjects = values[0][28];
-  dataTransportObject.license = values[0][30].replace('[date]', values[0][6] ).replace( '[author(s) or publisher]' , authorData['authorsFirstNameFirst'] );
+  dataTransportObject.license_text = values[0][31].replace('[date]', values[0][6] ).replace( '[author(s) or publisher]' , authorData['authorsFirstNameFirst'] );
   dataTransportObject.isVersionOf = values[0][0];
   dataTransportObject.contributors = values[0][26];
   dataTransportObject.embargo = parseEmbargoData(values);
@@ -996,7 +996,7 @@ function rowParser(dataTransportObject, currentRow, type) { // gets data from th
   dataTransportObject.collName = values[0][37];
   dataTransportObject.collection_id = values [0][38];
   dataTransportObject.inERA = values[0][39];
-  dataTransportObject.license_text = values[0][31];
+  dataTransportObject.license = values[0][30];
   dataTransportObject.embargo_end_date = values[0][29];
   dataTransportObject.languages = ["english"];
   dataTransportObject.owner_id = '1';
