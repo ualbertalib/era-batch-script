@@ -80,7 +80,7 @@ This script is based on JavaScript and designed to meet a specific output. See b
 
 **license_text:** Used for when users need a customized rights statement other than the CC licenses provided.
 
-**visibility:** Controlled vocab. Use one of the following:
+**visibility:** Controlled vocab. If an item is/was embargoed, mark it as so. In the rare case that it should have CCID protection, use 'authenticated'. 
 - public
 - authenticated
 - embargo
