@@ -607,7 +607,7 @@ function embargoCheck(txt) {
   } else if (fortyeightMonth > -1) {
       embargoMonth = "48 month"
   } else {
-      embargoMonth = "Check embargo"
+      embargoMonth = "CHECK EMBARGO"
   }
     return embargoMonth;
 }
@@ -1000,6 +1000,7 @@ function rowParser(dataTransportObject, currentRow, type) { // gets data from th
   dataTransportObject.embargo_end_date = values[0][29];
   dataTransportObject.languages = ["english"];
   dataTransportObject.owner_id = '1';
+  dataTransportObject.visibility = values[0][25].replace('No embargo found', 'public').replace('Check embargo', 'CHECK EMBARGO').replace(' 6 month', 'embargo').replace(' 9 month', 'embargo').replace(' 12 month', 'embargo').replace(' 18 month', 'embargo').replace(' 24 month', 'embargo').replace(' 36 month', 'embargo').replace(' 48 month', 'embargo');
   
   dataTransfer(dataTransportObject, type);
         
@@ -1056,7 +1057,7 @@ function parseEmbargoData(values) { //parses embargo field data and returns note
 
 var embargoPeriod = "";
 
-if (values[0][25] != ("") || ("No embargo found") || ("Check embargo")) {
+if (values[0][25] != ("") || ("No embargo found") || ("CHECK EMBARGO")) {
   var month = values[0][25];
   
   for (var i = 0; i <month.length; i++) {
@@ -1105,7 +1106,9 @@ function dataTransfer(dataTransportObject, type) { //transfers data to the edite
     sheet.getRange(lastRow,19).setValue(dataTransportObject['related_item']);
     sheet.getRange(lastRow,20).setValue(dataTransportObject['license']);
     sheet.getRange(lastRow,21).setValue(dataTransportObject['license_text']);
+    sheet.getRange(lastRow,22).setValue(dataTransportObject['visibility']);
 	sheet.getRange(lastRow,23).setValue(dataTransportObject['embargo_end_date']);
+
       
     if (dataTransportObject['date']) { // if an embargo is set, these attributes are applies
       
