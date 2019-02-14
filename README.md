@@ -3,6 +3,8 @@ Google Apps script used to convert investigation documents to ingest-ready batch
 
 This script is based on JavaScript and designed to meet a specific output. See batch ingest template for example. The headers listed below only include those needed to be passed from the investigation sheet to the manifest for ingest. Many fields exist in the investigation spreadsheet only to aid the investigatory process.
 
+XSL templates are stored here only for backup purposes, and are not updated. They contain the correct headers + all the validations.
+
 ## MANIFEST HEADERS
 
 **file_name**: Only contains file name, no path directory.
