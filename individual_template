@@ -3,7 +3,7 @@
 **/
 
 
-function opens(){ //this is the initilization for the page.
+function onOpen(e){ //this is the initilization for the page.
  
   var ui = SpreadsheetApp.getUi(); //creates the custom "special tools for mediated deposit" drop-down menu.
       ui.createMenu('Special Tools for Mediated Deposit')
@@ -80,10 +80,10 @@ function opens(){ //this is the initilization for the page.
   for (var i=0; i < collValues.length; i++ ) {
     var collValue1 = collValues[i][0];
     var collValue2 = collValues[i][1];
-    newProperties[collValue1] = collValue2; // the same for the collections
-  }
+    newProperties[collValue1] = collValue2; // the same for the collections 
+  } **/
   
-PropertiesService.getScriptProperties().setProperties(newProperties, true); // sets the new properties and deletes whatever was previously in the property store **/
+PropertiesService.getScriptProperties().setProperties(newProperties, true); // sets the new properties and deletes whatever was previously in the property store 
 
 }
 
