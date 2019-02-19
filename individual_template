@@ -1000,7 +1000,7 @@ function rowParser(dataTransportObject, currentRow, type) { // gets data from th
   dataTransportObject.embargo_end_date = values[0][29];
   dataTransportObject.languages = ["english"];
   dataTransportObject.owner_id = '1';
-  dataTransportObject.visibility = values[0][25].replace('No embargo found', 'public').replace('Check embargo', 'CHECK EMBARGO').replace(' 6 month', 'embargo').replace(' 9 month', 'embargo').replace(' 12 month', 'embargo').replace(' 18 month', 'embargo').replace(' 24 month', 'embargo').replace(' 36 month', 'embargo').replace(' 48 month', 'embargo');
+  dataTransportObject.visibility = values[0][25].replace('No embargo found', 'public').replace('Check embargo', 'CHECK EMBARGO').replace('*6 month', 'embargo').replace('*9 month', 'embargo').replace('*12 month', 'embargo').replace('*18 month', 'embargo').replace('*24 month', 'embargo').replace('*36 month', 'embargo').replace('*48 month', 'embargo');
   
   dataTransfer(dataTransportObject, type);
         
