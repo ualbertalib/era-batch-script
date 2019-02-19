@@ -881,7 +881,7 @@ function sheetFactory(dataTransportObject, type) { // if an existing sheet is us
       
       var response = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet().getName();
       //var response = ui.prompt('Investigation Name (Title Case):').getResponseText(); // name of spreadsheet and subsequent folder on 870
-      var sheetId = SpreadsheetApp.create(response, 1, 26 ).getId(); // create a new blank spreadsheet with 1 row and 26 columns
+      var sheetId = SpreadsheetApp.create(response, 1, 24 ).getId(); // create a new blank spreadsheet with 1 row and 26 columns
       var destinationFolder = DriveApp.getFolderById('0B8kEt6qEUaR-QWlPa3JObGkySGM'); // batch ingest folder (iterator type)   
       Utilities.sleep(500);
       var testFolderName='batch' + response; //adds the prefix 'batch' to the name of the investigation
