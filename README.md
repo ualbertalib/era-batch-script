@@ -5,6 +5,8 @@ This script is based on JavaScript and designed to meet a specific output. See b
 
 XSL templates are stored here only for backup purposes, and are not updated. They contain the correct headers + all the validations.
 
+Always refer to the [Google Apps Script documentation](https://developers.google.com/apps-script/) when attempting to fix an issue. Many of the bugs present are a result of language updates.
+
 ## MANIFEST HEADERS
 
 **file_name**: Only contains file name, no path directory.
