@@ -898,7 +898,7 @@ function sheetFactory(dataTransportObject, type) { // if an existing sheet is us
     } else if (type=='permission') {
     
       var response = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet().getName();
-      var sheetId = SpreadsheetApp.create(PropertiesService.getScriptProperties().getProperty('investigationName') + 'PermissionRequests', 1, 3).getId();
+      var sheetId = SpreadsheetApp.create(response + 'PermissionRequests', 1, 3).getId();
       var destinationFolder = DriveApp.getFolderById('0B8kEt6qEUaR-WlJ5Q3ZHYTBmRWc'); // permissions request folder
       Utilities.sleep(500);
       var testFolderName=response + 'Permissions'; //adds the prefix 'batch' to the name of the investigation
