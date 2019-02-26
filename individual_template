@@ -1294,7 +1294,7 @@ function moveBatchFiles() {
   var FolderToMoveTo = investigatorName + 'Files';
   var investigationFolderIterator = DriveApp.getFoldersByName(FolderToMoveTo);
   var batchFolderIterator = DriveApp.getFoldersByName('batch'+ investigatorName);
-  var fileList = SpreadsheetApp.getActiveSheet().getRange(2, 32, SpreadsheetApp.getActiveSheet().getLastRow() -1 ).getValues();
+  var fileList = SpreadsheetApp.getActiveSheet().getRange(2, 33, SpreadsheetApp.getActiveSheet().getLastRow() -1 ).getValues();
   
   while (batchFolderIterator.hasNext()) {
     var batchIngestFilesFolder = DriveApp.getFolderById(batchFolderIterator.next().getId())
