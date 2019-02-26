@@ -889,7 +889,7 @@ function sheetFactory(dataTransportObject, type) { // if an existing sheet is us
     } else if (type=='communication') {
       
       var response = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet().getName();
-      var sheetId = SpreadsheetApp.create( PropertiesService.getScriptProperties().getProperty('investigationName') + 'Communication' , 1, 3 ).getId();
+      var sheetId = SpreadsheetApp.create(response + 'Communication' , 1, 3 ).getId();
       var parentFolder = DriveApp.getFileById(SpreadsheetApp.getActiveSpreadsheet().getId()).getParents();
       while(parentFolder.hasNext()) var destinationFolder = DriveApp.getFolderById(parentFolder.next().getId());
       Utilities.sleep(500);
