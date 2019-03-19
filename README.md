@@ -108,3 +108,5 @@ Edit with caution. Access master script by clicking Tools>Script Editor.
 [collectionList](https://docs.google.com/spreadsheets/d/1ToxcezgwpHgA1jrklJ-mdx8LkOc6F7Mk7zAzvhIn1Ek/edit#gid=0)
 
 [communityList](https://docs.google.com/spreadsheets/d/1ov7tu_3Lwjbp11x74i429SNtbBZIe4_u8b17E1vkCOQ/edit#gid=0)
+
+[batch ingest template](https://docs.google.com/spreadsheets/d/178o_-ZEV3Ii-IzJ0AcJQTQqFsH3Ew2WCgyj2aZw99iY/edit#gid=0)
