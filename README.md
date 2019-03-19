@@ -89,7 +89,7 @@ Always refer to the [Google Apps Script documentation](https://developers.google
 - authenticated
 - embargo
 
-**embargo_end_date:** Using the latest publication date available, add the embargo period to calculate when the item is set to become available.
+**embargo_end_date:** Using the latest publication date available, add the embargo period to calculate when the item is set to become available. Do not add embargoes if the period has already passed.
 
 **visibility_after_embargo:** Controlled vocab. Should be one of the following:
 - public
