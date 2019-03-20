@@ -56,9 +56,9 @@ Always refer to the [Google Apps Script documentation](https://developers.google
 
 **description:** Abstract. If unavailable, use the first paragraph of the material.
 
-**community_id:** Use corresponding id to name in [communityList sheet](https://docs.google.com/spreadsheets/d/1ov7tu_3Lwjbp11x74i429SNtbBZIe4_u8b17E1vkCOQ/edit#gid=0).
+**community_id:** Use corresponding id to name in [communityList sheet](https://docs.google.com/spreadsheets/d/1ov7tu_3Lwjbp11x74i429SNtbBZIe4_u8b17E1vkCOQ/edit#gid=0). MANDATORY FIELD
 
-**collection_id:** Use corresponding id to name in [collectionList sheet](https://docs.google.com/spreadsheets/d/1ToxcezgwpHgA1jrklJ-mdx8LkOc6F7Mk7zAzvhIn1Ek/edit#gid=0).
+**collection_id:** Use corresponding id to name in [collectionList sheet](https://docs.google.com/spreadsheets/d/1ToxcezgwpHgA1jrklJ-mdx8LkOc6F7Mk7zAzvhIn1Ek/edit#gid=0). MANDATORY FIELD
 
 **contributors:** An additional contributor could be a consortium, governmental organization, not-for-profit, funding agency (i.e. "Canadian Academic Research Libraries (CARL)")
 
@@ -91,7 +91,7 @@ Always refer to the [Google Apps Script documentation](https://developers.google
 
 **embargo_end_date:** Using the latest publication date available, add the embargo period to calculate when the item is set to become available. 
 
-**visibility_after_embargo:** Controlled vocab. Should be one of the following:
+**visibility_after_embargo:** Controlled vocab. This field should not be filled if the item is not embargoed. Should be one of the following:
 - public
 - private
 
@@ -110,3 +110,7 @@ Edit with caution. Access master script by clicking Tools>Script Editor.
 [communityList](https://docs.google.com/spreadsheets/d/1ov7tu_3Lwjbp11x74i429SNtbBZIe4_u8b17E1vkCOQ/edit#gid=0)
 
 [batch ingest template](https://docs.google.com/spreadsheets/d/178o_-ZEV3Ii-IzJ0AcJQTQqFsH3Ew2WCgyj2aZw99iY/edit#gid=0)
+
+## FURTHER DOCUMENTATION
+
+[ERA Wiki](https://sites.google.com/a/ualberta.ca/era-mediated-deposit/)
