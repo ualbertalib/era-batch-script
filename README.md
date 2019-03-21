@@ -111,6 +111,9 @@ Edit with caution. Access master script by clicking Tools>Script Editor.
 
 [batch ingest template](https://docs.google.com/spreadsheets/d/178o_-ZEV3Ii-IzJ0AcJQTQqFsH3Ew2WCgyj2aZw99iY/edit#gid=0)
 
+
 ## FURTHER DOCUMENTATION
 
 [ERA Wiki](https://sites.google.com/a/ualberta.ca/era-mediated-deposit/)
+
+[Jupiter Controlled Vocabularies](https://github.com/ualbertalib/jupiter/tree/master/config/controlled_vocabularies)
