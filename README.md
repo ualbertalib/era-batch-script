@@ -89,9 +89,9 @@ Always refer to the [Google Apps Script documentation](https://developers.google
 - authenticated
 - embargo
 
-**embargo_end_date:** Using the latest publication date available, add the embargo period to calculate when the item is set to become available. Although the investigation script should not allow you to input dates any other way, ensure that the format is YYYY/MM/DD.
+**embargo_end_date:** Fill this field only if the visibility is set to 'embargo'. If visibility is set to 'public', this field should be empty. Using the latest publication date available, add the embargo period to calculate when the item is set to become available. Although the investigation script should not allow you to input dates any other way, ensure that the format is YYYY/MM/DD.
 
-**visibility_after_embargo:** Controlled vocab. This field should not be filled if the item is not embargoed. Should be one of the following:
+**visibility_after_embargo:** Controlled vocab; controls whether or not the public is able to see the item after the embargo period has ended. This field should not be filled if the item is not embargoed. Should be one of the following:
 - public
 - private
 
