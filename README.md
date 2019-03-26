@@ -9,6 +9,8 @@ Always refer to the [Google Apps Script documentation](https://developers.google
 
 ## MANIFEST HEADERS
 
+This section outlines the correct output to be found in the batch manifest. Much of the work is already done by the investigation script, the following provides the necessary information to fix bugs or to manually add items to a manifest.
+
 **file_name**: Only contains file name, no path directory.
 
 **title**: Self-explanatory. 	
