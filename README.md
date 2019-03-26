@@ -50,7 +50,7 @@ This section outlines the correct output to be found in the batch manifest. Much
 - no_linguistic_content
 - other
 
-**creators:** List of authors, last name, comma, first initial, and pipe. (e.g. 'Cockcroft, D.|Grant, K.|Stang, M.')
+**creators:** List of authors, last name, comma, full first name, and pipe. (e.g. 'Cockcroft, Daniel|Grant, Kaitlyn|Stang, Michaela')
 
 **subjects:** List related subject headings or keywords, separated by a pipe "|" character. these are taken from sources in the following order: (1) the article or publisher website (2) web of knowledge or an appropriately reputable subject repository (e.g. Hein) (3) PubMed (4) U of A discovery system (Ebsco discovery).  if you are unable to locate keywords from these sources, you may leave the field blank.
 
