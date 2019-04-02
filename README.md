@@ -21,8 +21,8 @@ This section outlines the correct output to be found in the batch manifest. Much
 
 - book
 - chapter
-- conference_poster
-- conference_paper
+- conference_workshop_poster
+- conference_workshop_presentation
 - dataset
 - image
 - article
@@ -34,6 +34,7 @@ This section outlines the correct output to be found in the batch manifest. Much
 **publication_status:** Controlled vocab. Use one of the following for articles only:
 - draft
 - published
+- submitted
 
 **owner_id:** Should always be '1'. 
 
