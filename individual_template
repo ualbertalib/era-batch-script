@@ -254,7 +254,7 @@ function onEdit(event){ // every time a cell is changed, this function is fired
             sh.getRange(currentRow,24).setBackground("#000000");
             sh.getRange(currentRow,25,1,8).setBackground("");
             sh.getRange(currentRow,35,1,6).setBackground("");
-            sh.getRange(currentRow,41).setValue('=REGEXREPLACE(REGEXREPLACE(REGEXREPLACE(REGEXREPLACE(REGEXREPLACE(REGEXREPLACE(REGEXREPLACE(REGEXREPLACE(REGEXEXTRACT(E' + currentRow + ',".*"),"\\s","+"),"\\?","%3F"),"\\:","%3A"),"\\,","%2C"),"\\(","%28"),"\\)","%29"),"\\/","%2F"),"^","https://era.library.ualberta.ca/catalog?utf8=✓&q=")');
+            sh.getRange(currentRow,41).setValue('=REGEXREPLACE(REGEXREPLACE(REGEXREPLACE(REGEXREPLACE(REGEXREPLACE(REGEXREPLACE(REGEXREPLACE(REGEXREPLACE(REGEXEXTRACT(E' + currentRow + ',".*"),"\\s","+"),"\\?","%3F"),"\\:","%3A"),"\\,","%2C"),"\\(","%28"),"\\)","%29"),"\\/","%2F"),"^","https://era.library.ualberta.ca/search?search=")');
           break;
               
           case "Post print version (yellow)":
