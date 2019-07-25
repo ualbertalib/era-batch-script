@@ -3,7 +3,7 @@
 **/
 
 
-function opens(){ //this is the initilization for the page.
+function onOpen(e){ //this is the initilization for the page.
  
   var ui = SpreadsheetApp.getUi(); //creates the custom "special tools for mediated deposit" drop-down menu.
       ui.createMenu('Special Tools for Mediated Deposit')
