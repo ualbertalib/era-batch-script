@@ -412,9 +412,9 @@ function onEdit(event){ // every time a cell is changed, this function is fired
      var currentValue = currentValues[i][0];
      
      if (currentValues[i][0]=="") {
-     sh.getRange(currentRow,36).setValue("");
+     sh.getRange(currentRow,37).setValue("");
       } else {
-      } sh.getRange(currentRow,36).setValue('=commNoidSearch("' + currentValue + '")');
+      } sh.getRange(currentRow,37).setValue('=commNoidSearch("' + currentValue + '")');
      }
      break;
      
@@ -428,9 +428,9 @@ function onEdit(event){ // every time a cell is changed, this function is fired
      var currentValue = currentValues[i][0];
      
      if (currentValues[i][0]=="") {
-     sh.getRange(currentRow,38).setValue("");
+     sh.getRange(currentRow,39).setValue("");
       } else {
-      } sh.getRange(currentRow,38).setValue('=collNoidSearch("' + currentValue + '")');
+      } sh.getRange(currentRow,39).setValue('=collNoidSearch("' + currentValue + '")');
      }
      break;
 **/
