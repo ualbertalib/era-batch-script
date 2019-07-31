@@ -959,7 +959,7 @@ function rowParser(dataTransportObject, currentRow, type) { // gets data from th
   
   
   var activeSheet = SpreadsheetApp.getActiveSheet();
-  var values = activeSheet.getRange(currentRow, 1, 1, 38).getValues();
+  var values = activeSheet.getRange(currentRow, 1, 1, 39).getValues();
   var file_name = values[0][32];
   var journal = values[0][7];
   var publisher = values[0][9];
