@@ -1001,6 +1001,7 @@ function rowParser(dataTransportObject, currentRow, type) { // gets data from th
   dataTransportObject.languages = ["english"];
   dataTransportObject.owner_id = '1';
   dataTransportObject.visibility = values[0][25].replace('No embargo found', 'public').replace('Check embargo', 'CHECK EMBARGO').replace('*6 month', 'embargo').replace('*9 month', 'embargo').replace('*12 month', 'embargo').replace('*18 month', 'embargo').replace('*24 month', 'embargo').replace('*36 month', 'embargo').replace('*48 month', 'embargo');
+  dataTransportObject.publication_status = values[0][15].replace('Publisher version (green)', 'published').replace('Publisher version (green) require PDF from author', 'published');
   
   dataTransfer(dataTransportObject, type);
         
@@ -1092,7 +1093,7 @@ function dataTransfer(dataTransportObject, type) { //transfers data to the edite
     sheet.getRange(lastRow,1).setValue(dataTransportObject['file_name']);
     sheet.getRange(lastRow,2).setValue(dataTransportObject['title']);
     sheet.getRange(lastRow,4).setValue(dataTransportObject['type']);
-    //sheet.getRange(lastRow,5).setValue(dataTransportObject['publication_status']);
+    sheet.getRange(lastRow,5).setValue(dataTransportObject['publication_status']);
     sheet.getRange(lastRow,6).setValue(dataTransportObject['owner_id']);    
     sheet.getRange(lastRow,7).setValue(dataTransportObject['languages']);    
     sheet.getRange(lastRow,8).setValue(dataTransportObject['creators']);
