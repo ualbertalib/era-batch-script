@@ -969,7 +969,7 @@ function rowParser(dataTransportObject, currentRow, type) { // gets data from th
   var journal = values[0][7];
   var publisher = values[0][9];
   var contact = values[0][17];
-  var notes = values[0][18];
+  var language = values[0][18];
   var volume = values[0][19];
   var issue = values[0][20];
   var pages = values[0][21];
@@ -977,7 +977,6 @@ function rowParser(dataTransportObject, currentRow, type) { // gets data from th
   var community_id = values[0][36];
   var collection_id = values[0][38];
   var inERA = values[0][39];
-  var language = values[0][44];
   
   dataTransportObject.citations = values[0][0];
   dataTransportObject.file_name = values[0][32];
@@ -1004,7 +1003,7 @@ function rowParser(dataTransportObject, currentRow, type) { // gets data from th
   dataTransportObject.inERA = values[0][39];
   dataTransportObject.license = values[0][30];
   dataTransportObject.embargo_end_date = values[0][29];
-  dataTransportObject.language = values[0][44];
+  dataTransportObject.language = values[0][18];
   dataTransportObject.owner_id = '1';
   dataTransportObject.visibility = values[0][25].replace('No embargo found', 'public').replace('Check embargo', 'CHECK EMBARGO').replace('*6 month', 'embargo').replace('*9 month', 'embargo').replace('*12 month', 'embargo').replace('*18 month', 'embargo').replace('*24 month', 'embargo').replace('*36 month', 'embargo').replace('*48 month', 'embargo');
   dataTransportObject.publication_status = values[0][15].replace('Publisher version (green)', 'published').replace('Publisher version (green) require PDF from author', 'published');
