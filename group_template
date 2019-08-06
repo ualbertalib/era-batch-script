@@ -3,7 +3,7 @@
 **/
 
 
-function opens(){ //this is the initilization for the page.
+function onOpen(e){ //this is the initilization for the page.
  
   var ui = SpreadsheetApp.getUi(); //creates the custom "special tools for mediated deposit" drop-down menu.
       ui.createMenu('Special Tools for Mediated Deposit')
@@ -23,38 +23,11 @@ function opens(){ //this is the initilization for the page.
        .addItem('Clearance (1st) / Journal Title (2nd)','colorJournalSort'))
        .addSeparator()
        .addSubMenu(ui.createMenu('Admin')
+       .addItem("Pull File Names", "findFilenames") 
        .addItem("Create Communications","getComm" )
        .addItem("Submit for Batch Ingest","getBatch" ))
        .addToUi();
        
-  var fileList = [];
-  var thisId = SpreadsheetApp.getActiveSpreadsheet().getId() //retrieves the id for this spreadsheet
-  var parentFolder = DriveApp.getFileById(thisId).getParents() //gets the parentfolder for this spreadsheet
-  var investigationName = '';
-   
-   
-  while (parentFolder.hasNext()) { //iterates over the contents of the parentfolder
-   var childFolders = parentFolder.next().getFolders() //gets the folders out of the parentfolder (i.e. the deposit-file folder)
-   while(childFolders.hasNext()) { //iterates over these folders
-    var depositFolder = childFolders.next(); //retrieves the deposit folder
-    var files = depositFolder.getFiles() //gets the files from the deposit folder and sets them in a files object
-    while (files.hasNext()) { //iterates over the files object
-      var file = files.next() //gets each file
-      fileList.push(file.getName()) //sets the filename to the fileList array 
-    }  
-   }
-  }
-  var parentFolder = DriveApp.getFileById(thisId).getParents()
-  while(parentFolder.hasNext()) {
-   var investigationName = parentFolder.next().getName();
-  }
-  
-  PropertiesService.getScriptProperties().setProperties({'investigationName': investigationName}, false)
-
-  var column = SpreadsheetApp.getActiveSheet().getRange("AF2:AF2999"); // gets the filename range of the spreadsheet
-  var rule = SpreadsheetApp.newDataValidation().requireValueInList(fileList,true); // builds a validation rule which includes drop-down list of the fileList values
-  column.setDataValidation(rule); // sets the rule to the filename range
-
   // Adds the community and collections names to as data validations
  
   var commSheet = SpreadsheetApp.openById('1ov7tu_3Lwjbp11x74i429SNtbBZIe4_u8b17E1vkCOQ').getActiveSheet(); //gets the communityList file
@@ -260,7 +233,7 @@ function onEdit(event){ // every time a cell is changed, this function is fired
             sh.getRange(currentRow,24).setBackground("#000000");
             sh.getRange(currentRow,25,1,8).setBackground("");
             sh.getRange(currentRow,35,1,6).setBackground("");
-            sh.getRange(currentRow,40).setValue('=REGEXREPLACE(REGEXREPLACE(REGEXREPLACE(REGEXREPLACE(REGEXREPLACE(REGEXREPLACE(REGEXREPLACE(REGEXREPLACE(REGEXEXTRACT(E' + currentRow + ',".*"),"\\s","+"),"\\?","%3F"),"\\:","%3A"),"\\,","%2C"),"\\(","%28"),"\\)","%29"),"\\/","%2F"),"^","https://era.library.ualberta.ca/catalog?utf8=✓&q=")');
+            sh.getRange(currentRow,40).setValue('=REGEXREPLACE(REGEXREPLACE(REGEXREPLACE(REGEXREPLACE(REGEXREPLACE(REGEXREPLACE(REGEXREPLACE(REGEXREPLACE(REGEXEXTRACT(E' + currentRow + ',".*"),"\\s","+"),"\\?","%3F"),"\\:","%3A"),"\\,","%2C"),"\\(","%28"),"\\)","%29"),"\\/","%2F"),"^","https://era.library.ualberta.ca/search?search=")');
             sh.getRange(currentRow,48).setValue("1");
             break;
             
@@ -270,7 +243,7 @@ function onEdit(event){ // every time a cell is changed, this function is fired
             sh.getRange(currentRow,24).setBackground("#000000");
             sh.getRange(currentRow,25,1,8).setBackground("");
             sh.getRange(currentRow,35,1,6).setBackground("");
-            sh.getRange(currentRow,40).setValue('=REGEXREPLACE(REGEXREPLACE(REGEXREPLACE(REGEXREPLACE(REGEXREPLACE(REGEXREPLACE(REGEXREPLACE(REGEXREPLACE(REGEXEXTRACT(E' + currentRow + ',".*"),"\\s","+"),"\\?","%3F"),"\\:","%3A"),"\\,","%2C"),"\\(","%28"),"\\)","%29"),"\\/","%2F"),"^","https://era.library.ualberta.ca/catalog?utf8=✓&q=")');
+            sh.getRange(currentRow,40).setValue('=REGEXREPLACE(REGEXREPLACE(REGEXREPLACE(REGEXREPLACE(REGEXREPLACE(REGEXREPLACE(REGEXREPLACE(REGEXREPLACE(REGEXEXTRACT(E' + currentRow + ',".*"),"\\s","+"),"\\?","%3F"),"\\:","%3A"),"\\,","%2C"),"\\(","%28"),"\\)","%29"),"\\/","%2F"),"^","https://era.library.ualberta.ca/search?search=")');
             sh.getRange(currentRow,48).setValue("2");
             break;
               
@@ -461,7 +434,40 @@ function onEdit(event){ // every time a cell is changed, this function is fired
 }
 
 /****************************************************************************************************************************/
-/**************************************************** NOID SEARCH FUNCTIONS *************************************************/
+/**************************************************** SEARCH FUNCTIONS *************************************************/
+
+function findFilenames(){ 
+
+var fileList = [];
+  var thisId = SpreadsheetApp.getActiveSpreadsheet().getId() //retrieves the id for this spreadsheet
+  var parentFolder = DriveApp.getFileById(thisId).getParents() //gets the parentfolder for this spreadsheet
+  var investigationName = '';
+   
+   
+  while (parentFolder.hasNext()) { //iterates over the contents of the parentfolder
+   var childFolders = parentFolder.next().getFolders() //gets the folders out of the parentfolder (i.e. the deposit-file folder)
+   while(childFolders.hasNext()) { //iterates over these folders
+    var depositFolder = childFolders.next(); //retrieves the deposit folder
+    var files = depositFolder.getFiles() //gets the files from the deposit folder and sets them in a files object
+    while (files.hasNext()) { //iterates over the files object
+      var file = files.next() //gets each file
+      fileList.push(file.getName()) //sets the filename to the fileList array 
+    }  
+   }
+  }
+  var parentFolder = DriveApp.getFileById(thisId).getParents()
+  while(parentFolder.hasNext()) {
+   var investigationName = parentFolder.next().getName();
+  }
+  
+  PropertiesService.getScriptProperties().setProperties({'investigationName': investigationName}, false)
+
+  var column = SpreadsheetApp.getActiveSheet().getRange("AF2:AF2999"); // gets the filename range of the spreadsheet
+  var rule = SpreadsheetApp.newDataValidation().requireValueInList(fileList,true); // builds a validation rule which includes drop-down list of the fileList values
+  column.setDataValidation(rule); // sets the rule to the filename range
+
+}
+
 
 function commNoidSearch(searchString) {
   var sh = SpreadsheetApp.openById('1ov7tu_3Lwjbp11x74i429SNtbBZIe4_u8b17E1vkCOQ').getActiveSheet();
@@ -629,7 +635,7 @@ function embargoCheck(txt) {
   } else if (fortyeightMonth > -1) {
       embargoMonth = "48 month"
   } else {
-      embargoMonth = "Check embargo"
+      embargoMonth = "CHECK EMBARGO"
   }
     return embargoMonth;
 }
@@ -775,14 +781,18 @@ function sheetFactory(dataTransportObject, type) { // if an existing sheet is us
   } else if (dataTransportObject.existing == false) {   
     
     if (type=='batch') {   
+    
+      var response = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet().getName();
       
-      var sheetId = SpreadsheetApp.create( ui.prompt('Name your new batch ingest file:').getResponseText() , 1, 29 ).getId(); // create a new blank spreadsheet with 1 row and 28 columns
+      var sheetId = SpreadsheetApp.create(response, 1, 24 ).getId(); // create a new blank spreadsheet with 1 row and 28 columns
       var destinationFolder = DriveApp.getFolderById('0B8kEt6qEUaR-QWlPa3JObGkySGM'); // batch ingest folder (iterator type)   
       Utilities.sleep(500);
+      var testFolderName='batch' + response; //adds the prefix 'batch' to the name of the investigation 
     
     } else if (type=='communication') {
       
-      var sheetId = SpreadsheetApp.create( PropertiesService.getScriptProperties().getProperty('investigationName') + 'Communication' , 1, 3 ).getId();
+     var response = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet().getName(); 
+     var sheetId = SpreadsheetApp.create(response + 'Communication' , 1, 3 ).getId();
       var parentFolder = DriveApp.getFileById(SpreadsheetApp.getActiveSpreadsheet().getId()).getParents();
       while(parentFolder.hasNext()) var destinationFolder = DriveApp.getFolderById(parentFolder.next().getId());
       Utilities.sleep(500);
@@ -799,7 +809,8 @@ function sheetFactory(dataTransportObject, type) { // if an existing sheet is us
       if (file.getId() == sheetId) {  //copies the spreadsheet to the active batch folder
         
         sheetId = file.getId(); // to edit the new sheet later
-        destinationFolder.addFile(file); // add the new spreadsheet to the active batch folder
+        var folder = destinationFolder.createFolder(testFolderName).getId(); //creates the folder 'batchInvestigationName'
+        DriveApp.getFolderById(folder).addFile(file); // add the new spreadsheet to the newly created batch folder
         var fileId = file.getId(); // gets the id for the root version of the new spreadsheet 
       
       }
@@ -842,45 +853,49 @@ function rowParser(dataTransportObject, currentRow, type) { // gets data from th
   
   
   var activeSheet = SpreadsheetApp.getActiveSheet();
-  var values = activeSheet.getRange(currentRow, 1, 1, 38).getValues();
-  var fileName = values[0][31];
+  var values = activeSheet.getRange(currentRow, 1, 1, 39).getValues();
+  var file_name = values[0][32];
   var journal = values[0][7];
   var publisher = values[0][9];
   var contact = values[0][17];
-  var notes = values[0][18];
+  var language = values[0][18];
   var volume = values[0][19];
   var issue = values[0][20];
   var pages = values[0][21];
   var authorData = parseAuthorData(values);
-  var commNoid = values [0][35];
-  var collNoid = values [0][37];
-  var inERA = values[0][38];
+  var commmunity_id = values [0][36];
+  var collection_id = values [0][38];
+  var inERA = values[0][39];
   
-  dataTransportObject.originalCitation = values[0][0];
-  dataTransportObject.fileName = values[0][31];
-  dataTransportObject.itemType = values[0][2];
-  dataTransportObject.itemTitle = values[0][4];
-  dataTransportObject.authorsBatch = values[0][5];
-  dataTransportObject.year = values[0][6];
+  dataTransportObject.citations = values[0][0];
+  dataTransportObject.file_name = values[0][32];
+  dataTransportObject.type = values[0][2];
+  dataTransportObject.title = values[0][4];
+  dataTransportObject.creators = values[0][5];
+  dataTransportObject.date_created = values[0][6];
   dataTransportObject.journal = values[0][7];
   dataTransportObject.publisher = values[0][9];
   dataTransportObject.contact = values[0][17];
   dataTransportObject.notes = values[0][18];
-  dataTransportObject.relatedURL = values[0][24];
+  dataTransportObject.related_item = values[0][24];
   dataTransportObject.description = values[0][27];
-  dataTransportObject.keywords = values[0][28];
-  dataTransportObject.license = values[0][30].replace('[date]', values[0][6] ).replace( '[author(s) or publisher]' , authorData['authorsFirstNameFirst'] );
+  dataTransportObject.subjects = values[0][28];
+  dataTransportObject.license_text = values[0][31].replace('[date]', values[0][6] ).replace( '[author(s) or publisher]' , authorData['authorsFirstNameFirst'] );
+  dataTransportObject.license = values[0][30];
   dataTransportObject.isVersionOf = values[0][0];
-  dataTransportObject.contributor = values[0][26];
+  dataTransportObject.contributors = values[0][26];
   dataTransportObject.embargo = parseEmbargoData(values);
-  dataTransportObject.date = values[0][29];
-  dataTransportObject.inPress = values[0][3];
   dataTransportObject.clearance = values[0][15];
-  dataTransportObject.commName = values[0][34];
-  dataTransportObject.commNoid = values[0][35];
-  dataTransportObject.collName = values[0][36];
-  dataTransportObject.collNoid = values[0][37];
-  dataTransportObject.inERA = values[0][38];
+  dataTransportObject.commName = values[0][35];
+  dataTransportObject.community_id = values[0][36];
+  dataTransportObject.collName = values[0][37];
+  dataTransportObject.collection_id = values[0][38];
+  dataTransportObject.inERA = values[0][39];
+  dataTransportObject.language = values[0][18]; 
+  dataTransportObject.owner_id = '1'; 
+  dataTransportObject.embargo_end_date = values[0][29]; 
+  dataTransportObject.visibility = values[0][25].replace('No embargo found', 'public').replace('Check embargo', 'CHECK EMBARGO').replace('*6 month', 'embargo').replace('*9 month', 'embargo').replace('*12 month', 'embargo').replace('*18 month', 'embargo').replace('*24 month', 'embargo').replace('*36 month', 'embargo').replace('*48 month', 'embargo');
+  dataTransportObject.publication_status = values[0][15].replace('Publisher version (green)', 'published').replace('Publisher version (green) require PDF from author', 'published'); 
   
   dataTransfer(dataTransportObject, type);
         
@@ -937,7 +952,7 @@ function parseEmbargoData(values) { //parses embargo field data and returns note
 
 var embargoPeriod = "";
 
-if (values[0][25] != ("") || ("No embargo found") || ("Check embargo")) {
+  if (values[0][25] != ("") || ("No embargo found") || ("CHECK EMBARGO")) {
   var month = values[0][25];
   
   for (var i = 0; i <month.length; i++) {
@@ -968,23 +983,27 @@ function dataTransfer(dataTransportObject, type) { //transfers data to the edite
   
   lastRow++;
 
-    if ((type=='batch') && (dataTransportObject['clearance'] == 'Publisher version (green)' || 'Post print version (yellow)') && (dataTransportObject['fileName'] != '') && (dataTransportObject['inERA'] != 'Yes')  ) { 
-    sheet.getRange(lastRow,1).setValue('batchFiles/' + dataTransportObject['fileName']);
-    sheet.getRange(lastRow,2).setValue(dataTransportObject['itemType']);
-    sheet.getRange(lastRow,4).setValue(dataTransportObject['isVersionOf']);
-    sheet.getRange(lastRow,5).setValue(dataTransportObject['itemTitle']);
-    sheet.getRange(lastRow,6).setValue(dataTransportObject['authorsBatch']);
-    sheet.getRange(lastRow,7).setValue(dataTransportObject['contributor']);
-    sheet.getRange(lastRow,8).setValue(dataTransportObject['description']);
-    sheet.getRange(lastRow,9).setValue(dataTransportObject['keywords']);
-    sheet.getRange(lastRow,12).setValue(dataTransportObject['year']);
-    sheet.getRange(lastRow,13).setValue('english');
-    sheet.getRange(lastRow,14).setValue(dataTransportObject['relatedURL']); //used
-    sheet.getRange(lastRow,19).setValue('open access');     
-    sheet.getRange(lastRow,21).setValue(dataTransportObject['commName']);
-    sheet.getRange(lastRow,22).setValue(dataTransportObject['commNoid']);
-    sheet.getRange(lastRow,23).setValue(dataTransportObject['collName']);
-    sheet.getRange(lastRow,24).setValue(dataTransportObject['collNoid']);
+    if ((type=='batch') && (dataTransportObject['clearance'] == 'Publisher version (green)' || 'Post print version (yellow)') && (dataTransportObject['file_name'] != '') && (dataTransportObject['inERA'] != 'Yes')  ) { 
+    //sheet.getRange(lastRow,1).setValue('batchFiles/' + dataTransportObject['file_name']);
+    sheet.getRange(lastRow,1).setValue(dataTransportObject['file_name']);
+    sheet.getRange(lastRow,2).setValue(dataTransportObject['title']);
+    sheet.getRange(lastRow,4).setValue(dataTransportObject['type']);
+    sheet.getRange(lastRow,5).setValue(dataTransportObject['publication_status']);
+    sheet.getRange(lastRow,6).setValue(dataTransportObject['owner_id']);    
+    sheet.getRange(lastRow,7).setValue(dataTransportObject['language']);    
+    sheet.getRange(lastRow,8).setValue(dataTransportObject['creators']);
+    sheet.getRange(lastRow,9).setValue(dataTransportObject['subjects']);
+	sheet.getRange(lastRow,10).setValue(dataTransportObject['date_created']);
+	sheet.getRange(lastRow,11).setValue(dataTransportObject['description']);
+    sheet.getRange(lastRow,12).setValue(dataTransportObject['community_id']);
+    sheet.getRange(lastRow,13).setValue(dataTransportObject['collection_id']); 
+	sheet.getRange(lastRow,14).setValue(dataTransportObject['contributors']);
+	sheet.getRange(lastRow,17).setValue(dataTransportObject['citations']);
+    sheet.getRange(lastRow,19).setValue(dataTransportObject['related_item']);
+    sheet.getRange(lastRow,20).setValue(dataTransportObject['license']);
+    sheet.getRange(lastRow,21).setValue(dataTransportObject['license_text']);
+    sheet.getRange(lastRow,22).setValue(dataTransportObject['visibility']);
+	sheet.getRange(lastRow,23).setValue(dataTransportObject['embargo_end_date']);
       
     if (dataTransportObject['date']) { // if an embargo is set, these attributes are applies
       
@@ -994,17 +1013,17 @@ function dataTransfer(dataTransportObject, type) { //transfers data to the edite
     
     }              
           
-    if ((dataTransportObject['license'].indexOf("Attribution"))>-1) { // determines if this statement belongs to 'license' column or 'rights' column
+   // if ((dataTransportObject['license'].indexOf("Attribution"))>-1) { // determines if this statement belongs to 'license' column or 'rights' column
       
-      sheet.getRange(lastRow,11).setValue(dataTransportObject['license']); //rights
+ //     sheet.getRange(lastRow,11).setValue(dataTransportObject['license']); //rights
     
-    } else {
+//    } else {
       
-      sheet.getRange(lastRow,10).setValue(dataTransportObject['license']); //license
+//      sheet.getRange(lastRow,10).setValue(dataTransportObject['license']); //license
     
-    } 
+//    } 
     
-  } else if (type=='communication' && dataTransportObject['originalCitation']!='') {
+  } else if (type=='communication' && dataTransportObject['citations']!='') {
     
 
     
@@ -1016,21 +1035,21 @@ function dataTransfer(dataTransportObject, type) { //transfers data to the edite
 
           case "Publisher version (green)":
             sheet.getRange(lastRow,3).setValue('This item will be deposited into ERA.').setWrap(true);
-            sheet.getRange(lastRow,1).setValue(dataTransportObject.originalCitation).setBackground('#3ad73f').setWrap(true);
+            sheet.getRange(lastRow,1).setValue(dataTransportObject.citations).setBackground('#3ad73f').setWrap(true);
             sheet.getRange(lastRow,5).setValue(1).setWrap(true);
             sheet.getRange(lastRow,2).setValue("Publisher version").setWrap(true);
           break;
         
            case "Publisher version (green) require PDF from author":
             sheet.getRange(lastRow,3).setValue('Please send us your final PDF.').setWrap(true);
-            sheet.getRange(lastRow,1).setValue(dataTransportObject.originalCitation).setBackground('#3ad73f').setWrap(true);
+            sheet.getRange(lastRow,1).setValue(dataTransportObject.citations).setBackground('#3ad73f').setWrap(true);
             sheet.getRange(lastRow,5).setValue(1).setWrap(true);
             sheet.getRange(lastRow,2).setValue("Publisher version").setWrap(true);
           break;
             
           case "Post print version (yellow)":
            sheet.getRange(lastRow,3).setValue('Please send us your author post-print.').setWrap(true);
-           sheet.getRange(lastRow,1).setValue(dataTransportObject.originalCitation).setBackground('#ffff00').setWrap(true);
+           sheet.getRange(lastRow,1).setValue(dataTransportObject.citations).setBackground('#ffff00').setWrap(true);
            sheet.getRange(lastRow,5).setValue(2).setWrap(true);
            sheet.getRange(lastRow,2).setValue("Post print version").setWrap(true);
            sheet.getRange(lastRow,4).setValue(dataTransportObject.embargo).setWrap(true);
@@ -1038,21 +1057,21 @@ function dataTransfer(dataTransportObject, type) { //transfers data to the edite
           
           case "In press (orange)":
             sheet.getRange(lastRow,3).setValue('Unable to deposit item due to its unpublished status.').setWrap(true);
-            sheet.getRange(lastRow,1).setValue(dataTransportObject.originalCitation).setBackground('#ff9900').setWrap(true);
+            sheet.getRange(lastRow,1).setValue(dataTransportObject.citations).setBackground('#ff9900').setWrap(true);
             sheet.getRange(lastRow,5).setValue(3).setWrap(true);
             sheet.getRange(lastRow,2).setValue("In Press").setWrap(true);
           break;
             
           case "Unknown or unclear (grey)": 
             sheet.getRange(lastRow,3).setValue('The publisher policies for archiving are unclear. We are sending a permission request to the publisher.').setWrap(true);
-            sheet.getRange(lastRow,1).setValue(dataTransportObject.originalCitation).setBackground('#cccccc').setWrap(true);
+            sheet.getRange(lastRow,1).setValue(dataTransportObject.citations).setBackground('#cccccc').setWrap(true);
             sheet.getRange(lastRow,5).setValue(4).setWrap(true);
             sheet.getRange(lastRow,2).setValue("Unknown or unclear").setWrap(true);
           break;
           
           case "Not without publisher or author permission (red)":
             sheet.getRange(lastRow,3).setValue('We are unable to deposit this item unless permission is sought from the publisher. We are sending a permission request to the publisher.').setWrap(true);
-            sheet.getRange(lastRow,1).setValue(dataTransportObject.originalCitation).setBackground('#ff0000').setWrap(true);
+            sheet.getRange(lastRow,1).setValue(dataTransportObject.citations).setBackground('#ff0000').setWrap(true);
             sheet.getRange(lastRow,5).setValue(5).setWrap(true);
             sheet.getRange(lastRow,2).setValue("Not without publisher permission").setWrap(true);
           break;
@@ -1060,7 +1079,7 @@ function dataTransfer(dataTransportObject, type) { //transfers data to the edite
           case "Not permitted (red)":
             sheet.getRange(lastRow,3).setValue('We are unable to deposit this item due to publisher restrictions.').setWrap(true);
             sheet.getRange(lastRow,2).setValue("Not permitted").setWrap(true);
-            sheet.getRange(lastRow,1).setValue(dataTransportObject.originalCitation).setBackground('#ff0000').setWrap(true);
+            sheet.getRange(lastRow,1).setValue(dataTransportObject.citations).setBackground('#ff0000').setWrap(true);
             sheet.getRange(lastRow,5).setValue(6).setWrap(true);
             sheet.getRange(lastRow,2).setValue("Not permitted").setWrap(true);
           break;
@@ -1074,34 +1093,30 @@ function dataTransfer(dataTransportObject, type) { //transfers data to the edite
 function initNewSheet(newSheet, type) { // writes the first (header) row to the newly created sheet
   
   if (type == 'batch' ) { // sets the batch headers
-    newSheet.getRange(1,1).setValue('fileName');
-    newSheet.getRange(1,2).setValue('itemType');
-    newSheet.getRange(1,3).setValue('ownerId');
-    newSheet.getRange(1,4).setValue('isVersionOf');
-    newSheet.getRange(1,5).setValue('title');
-    newSheet.getRange(1,6).setValue('creator');
-    newSheet.getRange(1,7).setValue('contributor'); 
-    newSheet.getRange(1,8).setValue('description');
-    newSheet.getRange(1,9).setValue('subject');
-    newSheet.getRange(1,10).setValue('license');
-    newSheet.getRange(1,11).setValue('rights');
-    newSheet.getRange(1,12).setValue('dateCreated');
-    newSheet.getRange(1,13).setValue('language');
-    newSheet.getRange(1,14).setValue('relatedURL'); 
-    newSheet.getRange(1,15).setValue('source');
-    newSheet.getRange(1,16).setValue('temporal');
-    newSheet.getRange(1,17).setValue('spatial');
-    newSheet.getRange(1,18).setValue('embargoDate');
-    newSheet.getRange(1,19).setValue('visOnIngest');
-    newSheet.getRange(1,20).setValue('visAfterEmbargo');
-    newSheet.getRange(1,21).setValue('communityName');
-    newSheet.getRange(1,22).setValue('communityNoid');
-    newSheet.getRange(1,23).setValue('collectionName');
-    newSheet.getRange(1,24).setValue('collectionNoid');
-    newSheet.getRange(1,25).setValue('communityName2');
-    newSheet.getRange(1,26).setValue('communityNoid2');
-    newSheet.getRange(1,27).setValue('collectionName2');
-    newSheet.getRange(1,28).setValue('collectionNoid2');
+   newSheet.getRange(1,1).setValue('file_name');
+	newSheet.getRange(1,2).setValue('title');
+	newSheet.getRange(1,3).setValue('alternate_title');
+	newSheet.getRange(1,4).setValue('type');
+	newSheet.getRange(1,5).setValue('publication_status');
+	newSheet.getRange(1,6).setValue('owner_id');
+	newSheet.getRange(1,7).setValue('language');
+	newSheet.getRange(1,8).setValue('creators');
+	newSheet.getRange(1,9).setValue('subjects');
+	newSheet.getRange(1,10).setValue('date_created');
+	newSheet.getRange(1,11).setValue('description');
+	newSheet.getRange(1,12).setValue('community_id');
+	newSheet.getRange(1,13).setValue('collection_id'); 
+	newSheet.getRange(1,14).setValue('contributors');
+	newSheet.getRange(1,15).setValue('places');
+	newSheet.getRange(1,16).setValue('time_periods');
+	newSheet.getRange(1,17).setValue('citations');
+	newSheet.getRange(1,18).setValue('source');
+	newSheet.getRange(1,19).setValue('related_item');
+	newSheet.getRange(1,20).setValue('license');
+	newSheet.getRange(1,21).setValue('license_text');
+	newSheet.getRange(1,22).setValue('visibility');
+	newSheet.getRange(1,23).setValue('embargo_end_date');
+	newSheet.getRange(1,24).setValue('visibility_after_embargo');
   }
   
   if (type == 'communication') { //sets the communication sheet headers and sorts by clearance
@@ -1126,9 +1141,11 @@ function initNewSheet(newSheet, type) { // writes the first (header) row to the 
 
 function moveBatchFiles() {
 
-  var investigationFolderIterator = DriveApp.getFoldersByName(SpreadsheetApp.getUi().prompt('Provide the name of the folder where your INVESTIGATION files are stored:').getResponseText());
-  var batchFolderIterator = DriveApp.getFoldersByName(SpreadsheetApp.getUi().prompt('Provide the name of the folder where your BATCH files are stored:').getResponseText());
-  var fileList = SpreadsheetApp.getActiveSheet().getRange(2, 32, SpreadsheetApp.getActiveSheet().getLastRow() -1 ).getValues();
+  var investigatorName = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet().getName();
+  var FolderToMoveTo = investigatorName + 'Files';
+  var investigationFolderIterator = DriveApp.getFoldersByName(FolderToMoveTo);
+  var batchFolderIterator = DriveApp.getFoldersByName('batch'+ investigatorName);
+  var fileList = SpreadsheetApp.getActiveSheet().getRange(2, 33, SpreadsheetApp.getActiveSheet().getLastRow() -1 ).getValues();
   
   while (batchFolderIterator.hasNext()) {
     var batchIngestFilesFolder = DriveApp.getFolderById(batchFolderIterator.next().getId())
